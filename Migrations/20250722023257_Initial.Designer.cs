@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250718034333_CommandDbContextInitial")]
-    partial class CommandDbContextInitial
+    [Migration("20250722023257_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,10 @@ namespace Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("RegisteredAt")
                         .HasColumnType("datetime2");
@@ -54,7 +58,7 @@ namespace Api.Migrations
                             b1.Property<DateTime>("PlacedAt")
                                 .HasColumnType("datetime2");
 
-                            b1.Property<decimal>("Quantity")
+                            b1.Property<decimal?>("Quantity")
                                 .HasPrecision(18, 2)
                                 .HasColumnType("decimal(18,2)");
 
@@ -95,12 +99,7 @@ namespace Api.Migrations
                                     b2.Property<decimal>("Amount")
                                         .HasPrecision(18, 2)
                                         .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("Charge_Amount");
-
-                                    b2.Property<string>("Currency")
-                                        .IsRequired()
-                                        .HasColumnType("nvarchar(max)")
-                                        .HasColumnName("Charge_Currency");
+                                        .HasColumnName("Amount");
 
                                     b2.HasKey("OrderId");
 
@@ -148,12 +147,7 @@ namespace Api.Migrations
                                     b2.Property<decimal>("Amount")
                                         .HasPrecision(18, 2)
                                         .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("Amount_Amount");
-
-                                    b2.Property<string>("Currency")
-                                        .IsRequired()
-                                        .HasColumnType("nvarchar(max)")
-                                        .HasColumnName("Amount_Currency");
+                                        .HasColumnName("Amount");
 
                                     b2.HasKey("PaymentId");
 

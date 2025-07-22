@@ -2,15 +2,15 @@
 
 namespace Api.Application;
 
-public record PlaceOrderRequest(int BatchNumber, decimal Quantity, decimal ChargeAmount, string Currency);
+public record PlaceOrderRequest(int BatchNumber, decimal? Quantity, decimal ChargeAmount);
 public record PlaceOrderResponse(int OrderId, DateTime PlacedAt);
-public record MakePaymentRequest(decimal Amount, string Currency);
+public record MakePaymentRequest(decimal Amount);
 public record MakePaymentResponse(int PaymentId, DateTime Date);
 public record UserStatementResponse(decimal TotalCharged, decimal TotalPaid, decimal Balance,
     IEnumerable<OrderDto> Orders, IEnumerable<PaymentDto> Payments);
 
 public record UserDto(int Id, DateTime RegisteredAt);
-public record OrderDto(int Id, DateTime PlacedAt, int BatchNumber, decimal Quantity, decimal Charge);
+public record OrderDto(int Id, DateTime PlacedAt, int BatchNumber, decimal? Quantity, decimal Charge);
 public record PaymentDto(int Id, DateTime Date, decimal Amount);
 
 // Repository Interfaces (wrapped domain repositories)
@@ -44,7 +44,7 @@ public class UserService
     {
         var user = _userRepository.GetById(userId) ?? throw new KeyNotFoundException("User not found.");
         var batchNum = new BatchNumber(request.BatchNumber);
-        var charge = new Money(request.ChargeAmount, request.Currency);
+        var charge = new Money(request.ChargeAmount);
         var order = user.PlaceOrder(batchNum, request.Quantity, charge);
         _userRepository.Save(user);
         return new PlaceOrderResponse(order.Id, order.PlacedAt);
@@ -53,7 +53,7 @@ public class UserService
     public MakePaymentResponse MakePayment(int userId, MakePaymentRequest request)
     {
         var user = _userRepository.GetById(userId) ?? throw new KeyNotFoundException("User not found.");
-        var amount = new Money(request.Amount, request.Currency);
+        var amount = new Money(request.Amount);
         var payment = user.MakePayment(amount);
         _userRepository.Save(user);
         return new MakePaymentResponse(payment.Id, payment.Date);

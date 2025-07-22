@@ -28,11 +28,10 @@ public class ApplicationDbContext : DbContext
                 {
                     bno.Property(b => b.Value).HasColumnName("Batch");
                 });
-                od.Property<decimal>("Quantity").HasPrecision(18, 2);
+                od.Property<decimal?>("Quantity").HasPrecision(18, 2);
                 od.OwnsOne(o => o.Charge, co =>
                 {
-                    co.Property(p => p.Amount).HasColumnName("Charge_Amount").HasPrecision(18, 2);
-                    co.Property(p => p.Currency).HasColumnName("Charge_Currency");
+                    co.Property(p => p.Amount).HasColumnName("Amount").HasPrecision(18, 2);
                 });
             });
             b.OwnsMany(u => u.Payments, pd =>
@@ -42,8 +41,7 @@ public class ApplicationDbContext : DbContext
                 pd.Property<DateTime>("Date");
                 pd.OwnsOne(p => p.Amount, ao =>
                 {
-                    ao.Property(p => p.Amount).HasColumnName("Amount_Amount").HasPrecision(18, 2);
-                    ao.Property(p => p.Currency).HasColumnName("Amount_Currency");
+                    ao.Property(p => p.Amount).HasColumnName("Amount").HasPrecision(18, 2);
                 });
             });
         });

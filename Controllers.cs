@@ -5,7 +5,7 @@ using Api.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/users/{userId:int}")]
+[Route("api/users")]
 public class UsersController : ControllerBase
 {
     private readonly UserService _userService;
@@ -19,18 +19,18 @@ public class UsersController : ControllerBase
     public ActionResult<IEnumerable<UserDto>> GetUsers()
         => Ok(_userService.ListUsers());
 
-    [HttpGet("statement")]
+    [HttpGet("{userId:int}/statement")]
     public ActionResult<UserStatementResponse> GetStatement(int userId)
         => Ok(_userService.GetStatement(userId));
 
-    [HttpPost("orders")]
+    [HttpPost("{userId:int}/orders")]
     public ActionResult<PlaceOrderResponse> PlaceOrder(int userId, [FromBody] PlaceOrderRequest request)
     {
         var result = _userService.PlaceOrder(userId, request);
         return CreatedAtAction(nameof(GetStatement), new { userId }, result);
     }
 
-    [HttpPost("payments")]
+    [HttpPost("{userId:int}/payments")]
     public ActionResult<MakePaymentResponse> MakePayment(int userId, [FromBody] MakePaymentRequest request)
     {
         var result = _userService.MakePayment(userId, request);

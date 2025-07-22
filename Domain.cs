@@ -3,36 +3,25 @@
 public sealed class Money : IEquatable<Money>
 {
     public decimal Amount { get; }
-    public string Currency { get; }
-
-    public Money(decimal amount, string currency = "USD")
+    public Money(decimal amount)
     {
         if (amount < 0) throw new ArgumentException("Money amount cannot be negative.");
         Amount = amount;
-        Currency = currency;
     }
 
     public Money Add(Money other)
     {
-        EnsureSameCurrency(other);
-        return new Money(Amount + other.Amount, Currency);
+        return new Money(Amount + other.Amount);
     }
 
     public Money Subtract(Money other)
     {
-        EnsureSameCurrency(other);
-        return new Money(Amount - other.Amount, Currency);
+        return new Money(Amount - other.Amount);
     }
 
-    private void EnsureSameCurrency(Money other)
-    {
-        if (Currency != other.Currency)
-            throw new InvalidOperationException("Cannot operate on different currencies.");
-    }
-
-    public bool Equals(Money other) => other is not null && Amount == other.Amount && Currency == other.Currency;
+    public bool Equals(Money other) => other is not null && Amount == other.Amount;
     public override bool Equals(object obj) => Equals(obj as Money);
-    public override int GetHashCode() => HashCode.Combine(Amount, Currency);
+    public override int GetHashCode() => HashCode.Combine(Amount);
 }
 
 public sealed class BatchNumber : IEquatable<BatchNumber>
@@ -49,17 +38,16 @@ public sealed class BatchNumber : IEquatable<BatchNumber>
 }
 
 // --- Entities & Aggregates ---
-
 public class Order : Entity<int>
 {
     public DateTime PlacedAt { get; private set; }
     public BatchNumber Batch { get; private set; }
-    public decimal Quantity { get; private set; }
+    public decimal? Quantity { get; private set; }
     public Money Charge { get; private set; }     // total charge for this order
 
     private Order() { }
 
-    internal Order(DateTime placedAt, BatchNumber batch, decimal quantity, Money charge)
+    internal Order(DateTime placedAt, BatchNumber batch, decimal? quantity, Money charge)
     {
         if (quantity <= 0) throw new ArgumentException("Quantity must be positive.");
         if (charge.Amount < 0) throw new ArgumentException("Charge cannot be negative.");
@@ -70,7 +58,7 @@ public class Order : Entity<int>
         Charge = charge;
     }
 
-    public static Order Create(BatchNumber batch, decimal quantity, Money charge)
+    public static Order Create(BatchNumber batch, decimal? quantity, Money charge)
     {
         //var id = Guid.NewGuid();
         return new Order(DateTime.UtcNow, batch, quantity, charge);
@@ -102,6 +90,7 @@ public class Payment : Entity<int>
 // --- Aggregate Root: User ---
 public class User : Entity<int>
 {
+    public string Name { get; private set; }
     public DateTime RegisteredAt { get; private set; }
     private readonly List<Order> _orders = new();
     private readonly List<Payment> _payments = new();
@@ -109,15 +98,16 @@ public class User : Entity<int>
     public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
     public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
 
-    private User()
+    private User(string name)
     {
         //Id = id;
+        Name = name;
         RegisteredAt = DateTime.UtcNow;
     }
 
-    public static User Register() => new User();
+    public static User Register(string name) => new User(name);
 
-    public Order PlaceOrder(BatchNumber batch, decimal quantity, Money charge)
+    public Order PlaceOrder(BatchNumber batch, decimal? quantity, Money charge)
     {
         var order = Order.Create(batch, quantity, charge);
         _orders.Add(order);
@@ -134,13 +124,13 @@ public class User : Entity<int>
     }
 
     public Money TotalCharged => Orders.Aggregate(new Money(0m), (sum, o) => sum.Add(o.Charge));
-    public Money TotalPaid => Payments.Aggregate(new Money(0m, TotalCharged.Currency), (sum, p) => sum.Add(p.Amount));
+    public Money TotalPaid => Payments.Aggregate(new Money(0m), (sum, p) => sum.Add(p.Amount));
     public Money Balance => TotalCharged.Subtract(TotalPaid);
 }
 
 // --- Domain Events ---
-
 public abstract class DomainEvent { }
+
 public static class DomainEvents
 {
     public static event Action<DomainEvent> Handlers;

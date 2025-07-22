@@ -57,35 +57,38 @@ public static class DataSeeder
 
         var startingBalances = new Dictionary<string, decimal>
         {
-            ["RS"] = 70m,
-            ["TQ"] = 650m,
-            ["KC"] = 120m,
-            ["AR"] = 370m,
+            ["RS"] = 70m + 50m + 70m + 40m,
+            ["TQ"] = 450m,
+            ["KC"] = 120m + 20m + 40m,
+            ["AR"] = 150m + (40m - 40m) + 100m + ((7 * 40m) - 20m),
             ["JR"] = 40m,
             ["GB"] = 390m,
-            ["SS"] = 380m,
-            ["DC"] = 110m,
-            ["AL"] = 370m,
+            ["SS"] = 420m,
+            ["DC"] = 50m + 40m + 40m,
+            ["AL"] = 600m + 20m - 250m,
             ["DP"] = 0m,
-            ["WB"] = 0m,
-            ["AD"] = 40m,
-            ["DK"] = 0m,
-            ["MK"] = 80m,
-            ["PT"] = 0m,
+            ["WB"] = 20m + 20m,
+            ["AD"] = 0m,
+            ["DK"] = 10m,
+            ["MK"] = 70m,
+            ["PT"] = 30m + (20m + 20m),
             ["JN"] = 30m,
-            ["AN"] = 50m
+            ["AN"] = 40m + 40m,
+            ["MD"] = 0m,
+            ["SN"] = 40m,
+            ["TC"] = 40m,
         };
 
         int userId = 1;
         foreach (var (code, balance) in startingBalances)
         {
             // register a new User
-            var user = User.Register();
+            var user = User.Register(code);
 
             // seed a single Order representing starting balance
             user.PlaceOrder(
                 new BatchNumber(1),
-                1m,
+                null,
                 new Money(balance)
             );
 
