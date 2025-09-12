@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Program_.cs" />
+    <Compile Remove="Domain\Core\IdGenerator.cs" />
   </ItemGroup>
 
   <ItemGroup>
