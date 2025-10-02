@@ -7,8 +7,7 @@ namespace Api.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public DbSet<User> Users { get; set; }
     public DbSet<Order> Orders { get; set; }
@@ -19,109 +18,110 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // --- Converters for StronglyTypedIds ---
-        var userIdConverter = new ValueConverter<UserId, Guid>(
-            id => id.Value,
-            value => new UserId(value));
-
-        var orderIdConverter = new ValueConverter<OrderId, Guid>(
-            id => id.Value,
-            value => new OrderId(value));
-
-        var paymentIdConverter = new ValueConverter<PaymentId, Guid>(
-            id => id.Value,
-            value => new PaymentId(value));
-
-        var productTypeIdConverter = new ValueConverter<ProductTypeId, Guid>(
-            id => id.Value,
-            value => new ProductTypeId(value));
-
-        var batchIdConverter = new ValueConverter<BatchId, Guid>(
-            id => id.Value,
-            value => new BatchId(value));
-
-        var batchNumberConverter = new ValueConverter<BatchNumber, int>(
-            id => id.Value,
-            value => new BatchNumber(value));
+        var userIdConverter = new ValueConverter<UserId, Guid>(id => id.Value, value => new UserId(value));
+        var orderIdConverter = new ValueConverter<OrderId, Guid>(id => id.Value, value => new OrderId(value));
+        var paymentIdConverter = new ValueConverter<PaymentId, Guid>(id => id.Value, value => new PaymentId(value));
+        var productTypeIdConverter = new ValueConverter<ProductTypeId, Guid>(id => id.Value, value => new ProductTypeId(value));
+        var batchIdConverter = new ValueConverter<BatchId, Guid>(id => id.Value, value => new BatchId(value));
 
         // --- User entity ---
         modelBuilder.Entity<User>(b =>
         {
             b.HasKey(u => u.Id);
             b.Property(u => u.Id).HasConversion(userIdConverter);
-            b.Property(u => u.Name).IsRequired().HasMaxLength(100);
-            b.Property(u => u.Preferred);
-            b.HasMany(u => u.Orders).WithOne().HasForeignKey(o => o.UserId);
-            b.HasMany(u => u.Payments).WithOne().HasForeignKey(p => p.UserId);
+            b.Property(u => u.RegisteredAt).IsRequired();
+
+            b.OwnsOne(u => u.Name, name =>
+            {
+                name.Property(n => n.Value)
+                    .HasColumnName("Name")
+                    .IsRequired()
+                    .HasMaxLength(100);
+            });
+
+            b.HasMany(u => u.Payments)
+                .WithOne()
+                .HasForeignKey(p => p.UserId);
         });
 
-        modelBuilder.Entity<ProductType>(b =>
+        modelBuilder.Entity<Batch>(b =>
         {
-            b.HasKey(pt => pt.Id);
-            b.Property(pt => pt.Id).HasConversion(productTypeIdConverter);
-            b.Property(pt => pt.UnitPrice).HasPrecision(18, 2);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Id).HasConversion(batchIdConverter);
+            b.Property(x => x.CreatedAt).IsRequired();
+            b.Property(x => x.IsActive).IsRequired();
+
+            b.OwnsOne(x => x.Number, n =>
+            {
+                n.Property(p => p.Value)
+                 .HasColumnName("Number")
+                 .IsRequired();
+            });
+
+            b.HasMany(x => x.Orders)
+             .WithOne()
+             .HasForeignKey(o => o.BatchId);
         });
 
-        // --- Order entity ---
         modelBuilder.Entity<Order>(b =>
         {
             b.HasKey(o => o.Id);
             b.Property(o => o.Id).HasConversion(orderIdConverter);
             b.Property(o => o.UserId).HasConversion(userIdConverter).IsRequired();
-            b.Property(o => o.ProductTypeId).HasConversion(productTypeIdConverter).IsRequired();
-            b.Property(o => o.BatchNumber).HasConversion(batchNumberConverter).HasColumnName("BatchNumber");
-
-            b.HasOne<ProductType>()
-                .WithMany()
-                .HasForeignKey(o => o.ProductTypeId);
 
             b.OwnsOne(o => o.OrderDetail, detail =>
             {
-                detail.OwnsOne(d => d.Total, money =>
+                detail.Property(d => d.ProductTypeId)
+                .HasConversion(
+                id => id.Value,
+                value => new ProductTypeId(value))
+                .HasColumnName("ProductTypeId");
+
+
+                detail.OwnsOne(d => d.UnitPrice, price =>
                 {
-                    money.Property(m => m.Amount)
-                         .HasColumnName("Amount")
-                         .HasPrecision(18, 2);
+                    price.Property(p => p.Amount)
+                    .HasColumnName("UnitPrice")
+                    .HasPrecision(18, 2);
                 });
 
-                detail.Property(d => d.OrderDate).HasColumnName("OrderDate");
+
+                detail.Property(d => d.Quantity).HasColumnName("Quantity");
+                detail.Property(d => d.PlacedAt).HasColumnName("PlacedAt");
                 detail.Property(d => d.DueDate).HasColumnName("DueDate");
             });
         });
 
-        modelBuilder.Entity<Payment>(builder =>
+        // --- Payment entity ---
+        modelBuilder.Entity<Payment>(b =>
         {
-            builder.HasKey(p => p.Id);
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Id).HasConversion(paymentIdConverter);
+            b.Property(p => p.UserId).HasConversion(userIdConverter).IsRequired();
 
-            builder.Property(p => p.Id)
-                .HasConversion(paymentIdConverter);
-
-            builder.Property(p => p.UserId)
-                .HasConversion(userIdConverter);
-
-            builder.OwnsOne(p => p.PaidAmount, money =>
+            b.OwnsOne(p => p.PaidAmount, money =>
             {
-                money.Property(m => m.Amount).HasColumnName("PaidAmount").HasPrecision(18, 2);
+                money.Property(m => m.Amount)
+                     .HasColumnName("PaidAmount")
+                     .HasPrecision(18, 2);
             });
 
-            builder.OwnsOne(p => p.RemainingAmount, money =>
-            {
-                money.Property(m => m.Amount).HasColumnName("RemainingAmount").HasPrecision(18, 2);
-            });
-
-            builder.Property(p => p.PaymentDate).IsRequired();
+            b.Property(p => p.PaymentDate).IsRequired();
         });
 
-        modelBuilder.Entity<Batch>(builder =>
+        // --- ProductType entity ---
+        modelBuilder.Entity<ProductType>(b =>
         {
-            builder.HasKey(b => b.Id);
-            builder.Property(b => b.Id)
-                .HasConversion(batchIdConverter);
+            b.HasKey(pt => pt.Id);
+            b.Property(pt => pt.Id).HasConversion(productTypeIdConverter);
+            b.Property(pt => pt.Name).IsRequired().HasMaxLength(100);
 
-            builder.Property(b => b.BatchNumber)
-                .HasConversion(batchNumberConverter)
-                .HasColumnName("BatchNumber");
-
-            builder.Property(b => b.CreatedDate).IsRequired();
+            b.OwnsOne(pt => pt.UnitPrice, money =>
+            {
+                money.Property(m => m.Amount)
+                     .HasColumnName("UnitPrice")
+                     .HasPrecision(18, 2);
+            });
         });
     }
 }

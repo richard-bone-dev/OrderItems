@@ -1,13 +1,15 @@
-using Api.Application.Interfaces;
-using Api.Application.Services;
+using Api.Application.Abstractions;
 using Api.Domain.Core;
 using Api.Domain.Entities;
-using Api.Domain.Events;
 using Api.Domain.ValueObjects;
 using Api.Infrastructure.Persistence;
+using Api.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Scrutor;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Linq;
 
 namespace Api;
 
@@ -44,18 +46,24 @@ public class Program
             //    options.UseInMemoryDatabase("Placeholder"));
         }
 
-        // Repositories & Services
-        builder.Services.AddScoped<IUserService, UserService>();
-        builder.Services.AddScoped<IOrderService, OrderService>();
-        builder.Services.AddScoped<IPaymentService, PaymentService>();
-        builder.Services.AddScoped<IOrderPaymentService, OrderPaymentService>();
+        var applicationAssembly = typeof(ICommandHandler<,>).Assembly;
 
-        builder.Services.AddScoped<IUserRepository, UserRepository>();
-        builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-        builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
-        builder.Services.AddScoped<IOrderPaymentService, OrderPaymentService>();
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(applicationAssembly)
+            .AddClasses(c => c.AssignableTo(typeof(ICommandHandler<,>)))
+                .AsSelfWithInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(c => c.AssignableTo(typeof(IQueryHandler<,>)))
+                .AsSelfWithInterfaces()
+                .WithScopedLifetime()
+        );
 
-        builder.Services.AddSingleton<IBatchAssignmentService, BatchAssignmentService>();
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(typeof(IUserRepository).Assembly, typeof(ApplicationDbContext).Assembly)
+                .AddClasses(c => c.InNamespaces("Api.Infrastructure.Repositories"))
+                    .AsImplementedInterfaces()
+                    .WithScopedLifetime()
+        );
 
         // Controllers
         builder.Services.AddControllers();
@@ -76,7 +84,7 @@ public class Program
                 if (db.Database.IsRelational())
                 {
                     db.Database.Migrate();
-                    //DataSeeder.Seed(db, app.Environment.EnvironmentName);
+                    DataSeeder.Seed(db, app.Environment.EnvironmentName);
                 }
             }
         }
@@ -147,27 +155,27 @@ public static class DataSeeder
         // Safe, idempotent seeding for Dev/Prod (runs after Migrate)
         if (!context.ProductTypes.Any())
         {
-            var products = new[]
-            {
-                ProductType.Create(0m),
-                ProductType.Create(40m),
-                ProductType.Create(70m),
-                ProductType.Create(80m),
-                ProductType.Create(100m),
-                ProductType.Create(120m),
-                ProductType.Create(190m)
+            //Array.Empty<ProductType>();
+            var products = new[] {
+                ProductType.Create("None", new Money(0m)),
+                ProductType.Create("1", new Money(40m)),
+                ProductType.Create("2", new Money(70m)),
+                ProductType.Create("2a", new Money(80m)),
+                ProductType.Create("3", new Money(100m)),
+                ProductType.Create("3a", new Money(120m)),
+                ProductType.Create("8", new Money(190m))
             };
             context.ProductTypes.AddRange(products);
             context.SaveChanges();
         }
 
-        var productTypeId = context.ProductTypes.OrderBy(pt => pt.UnitPrice).First().Id;
+        var productTypeId = context.ProductTypes.OrderBy(pt => pt.UnitPrice.Amount).First().Id;
 
-        if (!context.Users.Any(u => u.Name == "None"))
-            context.Users.Add(User.Register("None"));
+        if (!context.Users.Any(u => u.Name.Value == "None"))
+            context.Users.Add(User.Register(new UserName("None")));
 
-        if (!context.Users.Any(u => u.Name == "Admin"))
-            context.Users.Add(User.Register("Admin"));
+        if (!context.Users.Any(u => u.Name.Value == "Admin"))
+            context.Users.Add(User.Register(new UserName("Admin")));
 
         if (!context.Users.Any())
         {
@@ -175,48 +183,53 @@ public static class DataSeeder
             {
                 ["None"] = 0m,
                 ["Admin"] = 0m,
-                ["AL"] = 120m + 10m + 7m - 30m,
-                ["TQ"] = 54m,
-                ["SS"] = 54.5m - 4m,
-                ["AR"] = 38m + 4m + 4m + 4m,
-                ["DC"] = 20m - 10m + 8m,
-                ["GB"] = 19m - 13m + 8m,
-                ["SC"] = 15m,
-                ["TC"] = 15m,
-                ["MK"] = 12m,
-                ["KC"] = 12m,
-                ["WB"] = 12m,
-                ["PT"] = 8m - 8m + 4m,
-                ["AD"] = 8m - 8m + 4m,
-                ["MD"] = 8m - 8m + 4m + 4m,
-                ["RS"] = 12m + 4m + 12m - 25m + 12m + 12m,
-                ["KR"] = 6m,
-                ["SM"] = 4m + 4m,
-                ["MP"] = 4m - 4m + 4m,
-                ["DK"] = 4m + 4m - 8m + 19m - 20m,
-                ["JR"] = 4m,
-                ["LI"] = 4m,
-                ["TU"] = 4m,
-                ["AM"] = 4m,
-                ["SI"] = 4m,
-                ["HA"] = 3m,
-                ["AN"] = 2m + 4m
+                ["Tropical"] = 57m + 14m + 11m + 8m + 11m + 11m,
+                ["Aussie"] = 37m + 4m + 4m + 4m + 4m + 4m + 4m + 4m,
+                ["Syd"] = 54m + 3m + 4m + 4m,
+                ["Stu"] = 54.5m,
+                ["Rossweiler"] = 9m + 10m + 9.5m + 17m + 12 + 12m + 12m - 30m + 12m + 12m - 50m + 12m - 12m,
+                ["Sean"] = 19m + 4m,
+                ["MrSherg"] = 3m + 4m + 4m + 5m - 5m + 4m + 4m,
+                ["Saffer"] = 16m - 17m + 8m + 8m,
+                ["Tree"] = 8m + 4m + 4m,
+                ["BoatMK"] = 12m, 
+                ["Landscaper"] = 12m,
+                ["SamDan"] = 12m,
+                ["Pill"] = 4m + 4m + 2m + 2m,
+                ["Kieran"] = 12m + 4m - 10m,
+                ["Wiggy"] = 4m + 4m,
+                ["BoatAnt"] = 2m + 4m,
+                ["Crystal"] = 6m,
+                ["Bordeaux"] = 4m,
+                ["Linc"] = 4m,
+                ["Lara"] = 4m,
+                ["Pullen"] = 4m,
+                ["DanM"] = 4m,
+                ["Harry"] = 4m,
+                ["Parson"] = 4m,
+                //["Turtle"] = 4m - 4m,
+                //["Tall"] = 4m - 4m,
+                //["DT"] = 4m,
+                //["AM"] = 4m,
+                //["BigJo"] = 0m,
+                //["AJ"] = 0m,
             };
 
             var sorted = starting.OrderByDescending(c => c.Value);
+            var amt = starting.Values.Sum();
 
             foreach (var (code, balance) in sorted)
             {
-                var user = User.Register(code);
+                var user = User.Register(new UserName(code));
 
                 if (balance > 0)
                 {
-                    user.PlaceOrder(
-                        new UserId(user.Id),
-                        new BatchNumber(1),
-                        productTypeId,
-                        new OrderDetail(new Money(balance * 10), null, null)
-                    );
+                    //user.Place(
+                    //    new UserId(user.Id),
+                    //    new BatchNumber(1),
+                    //    productTypeId,
+                    //    new OrderDetail(new Money(balance * 10), null, null)
+                    //);
                 }
 
                 context.Users.Add(user);
@@ -233,11 +246,11 @@ public static class DataSeeder
         context.Database.EnsureCreated();
 
         // Minimal, predictable dataset for tests
-        var pt50 = ProductType.Create(50m);
-        var pt100 = ProductType.Create(100m);
-        context.ProductTypes.AddRange(pt50, pt100);
+        //var pt50 = ProductType.Create(50m);
+        //var pt100 = ProductType.Create(100m);
+        //context.ProductTypes.AddRange(pt50, pt100);
 
-        var testUser = User.Register("Test User");
+        var testUser = User.Register(new UserName("Test User"));
         context.Users.Add(testUser);
 
         context.SaveChanges();

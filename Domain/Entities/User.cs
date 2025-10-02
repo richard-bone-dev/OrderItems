@@ -1,73 +1,49 @@
 ﻿using Api.Domain.Core;
+using Api.Domain.Entities;
 using Api.Domain.Events;
 using Api.Domain.ValueObjects;
 
-namespace Api.Domain.Entities;
-
-
-// --- Aggregate Root: User ---
 public class User : Entity<UserId>
 {
-    public string Name { get; private set; }
-    public bool Preferred { get; private set; }
+    public UserName Name { get; private set; }
+    public DateTime RegisteredAt { get; private set; }
 
-    public ICollection<Order> Orders { get; set; } = new List<Order>();
-    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    private readonly List<Payment> _payments = new();
+    public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
 
-    private User(string name)
-    {
-        Name = name;
-        Preferred = false;
-    }
+    private readonly List<Order> _orders = new();
+    public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
-    private User(UserId id, string name, bool preferred)
+    public Money TotalCharged => _orders.Aggregate(new Money(0m), (sum, o) => sum.Add(o.OrderDetail.Total));
+    public Money TotalPaid => _payments.Aggregate(new Money(0m), (sum, p) => sum.Add(p.PaidAmount));
+    public Money Balance => TotalCharged.Subtract(TotalPaid);
+
+    private User() { }
+
+    private User(UserId id, UserName name, DateTime registeredAt)
     {
         Id = id;
-        Name = name;
-        Preferred = preferred;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        RegisteredAt = registeredAt;
     }
 
-    public static User Create(UserId id, string name, bool preferred)
-    {
-        return new User(id, name, preferred);
-    }
+    public static User Register(UserName name)
+        => new(UserId.New(), name, DateTime.UtcNow);
 
-    public static User Register(string name)
+    public void AddPayment(Payment payment)
     {
-        var user = new User(name)
-        {
-            Id = new(Guid.NewGuid())
-        };
-        return user;
-    }
+        if (payment.UserId != Id)
+            throw new InvalidOperationException("Payment user mismatch.");
 
-    public void ApplyExternalPayment(Payment payment)
-    {
-        if (payment.UserId != Id) throw new InvalidOperationException("Payment user mismatch.");
-
-        Payments.Add(payment);
+        _payments.Add(payment);
         DomainEvents.Raise(new PaymentRecorded(this, payment));
     }
 
-    public Order PlaceOrder(UserId userId, BatchNumber batch, ProductTypeId productTypeId, OrderDetail orderDetail)
+    public void AddOrder(Order order)
     {
-        var order = Order.Create(userId, batch, productTypeId, orderDetail);
+        if (order.UserId != Id)
+            throw new InvalidOperationException("Order user mismatch.");
 
-        Orders.Add(order);
-        DomainEvents.Raise(new OrderPlaced(this, order));
-        return order;
+        _orders.Add(order);
     }
-
-    public Payment MakePayment(UserId userId, Money paid, Money remaining, DateTime? paymentDate)
-    {
-        var payment = Payment.Create(userId, paid, remaining, paymentDate);
-
-        Payments.Add(payment);
-        DomainEvents.Raise(new PaymentRecorded(this, payment));
-        return payment;
-    }
-
-    public Money TotalCharged => Orders.Aggregate(new Money(0m), (sum, o) => sum.Add(o.OrderDetail.Total));
-    public Money TotalPaid => Payments.Aggregate(new Money(0m), (sum, p) => sum.Add(p.PaidAmount));
-    public Money Balance => TotalCharged.Subtract(TotalPaid);
 }

@@ -22,16 +22,28 @@ namespace Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Api.Domain.Order", b =>
+            modelBuilder.Entity("Api.Domain.Entities.Batch", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BatchNumber")
-                        .HasColumnType("int")
-                        .HasColumnName("BatchNumber");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ProductTypeId")
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Batches");
+                });
+
+            modelBuilder.Entity("Api.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BatchId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
@@ -39,14 +51,12 @@ namespace Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductTypeId");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("BatchId");
 
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("Api.Domain.Payment", b =>
+            modelBuilder.Entity("Api.Domain.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -64,21 +74,7 @@ namespace Api.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("Api.Domain.ProductType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductTypes");
-                });
-
-            modelBuilder.Entity("Api.Domain.User", b =>
+            modelBuilder.Entity("Api.Domain.Entities.ProductType", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -88,29 +84,56 @@ namespace Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("Preferred")
-                        .HasColumnType("bit");
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductTypes");
+                });
+
+            modelBuilder.Entity("User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Api.Domain.Order", b =>
+            modelBuilder.Entity("Api.Domain.Entities.Batch", b =>
                 {
-                    b.HasOne("Api.Domain.ProductType", null)
-                        .WithMany()
-                        .HasForeignKey("ProductTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsOne("Api.Domain.ValueObjects.BatchNumber", "Number", b1 =>
+                        {
+                            b1.Property<Guid>("BatchId")
+                                .HasColumnType("uniqueidentifier");
 
-                    b.HasOne("Api.Domain.User", null)
+                            b1.Property<int>("Value")
+                                .HasColumnType("int")
+                                .HasColumnName("Number");
+
+                            b1.HasKey("BatchId");
+
+                            b1.ToTable("Batches");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BatchId");
+                        });
+
+                    b.Navigation("Number")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Domain.Entities.Order", b =>
+                {
+                    b.HasOne("Api.Domain.Entities.Batch", null)
                         .WithMany("Orders")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Api.Domain.OrderDetail", "OrderDetail", b1 =>
+                    b.OwnsOne("Api.Domain.Entities.OrderDetail", "OrderDetail", b1 =>
                         {
                             b1.Property<Guid>("OrderId")
                                 .HasColumnType("uniqueidentifier");
@@ -119,9 +142,13 @@ namespace Api.Migrations
                                 .HasColumnType("datetime2")
                                 .HasColumnName("DueDate");
 
-                            b1.Property<DateTime?>("OrderDate")
+                            b1.Property<DateTime>("PlacedAt")
                                 .HasColumnType("datetime2")
-                                .HasColumnName("OrderDate");
+                                .HasColumnName("PlacedAt");
+
+                            b1.Property<Guid>("ProductTypeId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("ProductTypeId");
 
                             b1.HasKey("OrderId");
 
@@ -130,7 +157,7 @@ namespace Api.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("OrderId");
 
-                            b1.OwnsOne("Api.Domain.Money", "Total", b2 =>
+                            b1.OwnsOne("Api.Domain.ValueObjects.Money", "Total", b2 =>
                                 {
                                     b2.Property<Guid>("OrderDetailOrderId")
                                         .HasColumnType("uniqueidentifier");
@@ -138,7 +165,7 @@ namespace Api.Migrations
                                     b2.Property<decimal>("Amount")
                                         .HasPrecision(18, 2)
                                         .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("Amount");
+                                        .HasColumnName("Total");
 
                                     b2.HasKey("OrderDetailOrderId");
 
@@ -156,15 +183,15 @@ namespace Api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Api.Domain.Payment", b =>
+            modelBuilder.Entity("Api.Domain.Entities.Payment", b =>
                 {
-                    b.HasOne("Api.Domain.User", null)
+                    b.HasOne("User", null)
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Api.Domain.Money", "PaidAmount", b1 =>
+                    b.OwnsOne("Api.Domain.ValueObjects.Money", "PaidAmount", b1 =>
                         {
                             b1.Property<Guid>("PaymentId")
                                 .HasColumnType("uniqueidentifier");
@@ -182,35 +209,66 @@ namespace Api.Migrations
                                 .HasForeignKey("PaymentId");
                         });
 
-                    b.OwnsOne("Api.Domain.Money", "RemainingAmount", b1 =>
+                    b.Navigation("PaidAmount")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Domain.Entities.ProductType", b =>
+                {
+                    b.OwnsOne("Api.Domain.ValueObjects.Money", "UnitPrice", b1 =>
                         {
-                            b1.Property<Guid>("PaymentId")
+                            b1.Property<Guid>("ProductTypeId")
                                 .HasColumnType("uniqueidentifier");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(18, 2)
                                 .HasColumnType("decimal(18,2)")
-                                .HasColumnName("RemainingAmount");
+                                .HasColumnName("UnitPrice");
 
-                            b1.HasKey("PaymentId");
+                            b1.HasKey("ProductTypeId");
 
-                            b1.ToTable("Payments");
+                            b1.ToTable("ProductTypes");
 
                             b1.WithOwner()
-                                .HasForeignKey("PaymentId");
+                                .HasForeignKey("ProductTypeId");
                         });
 
-                    b.Navigation("PaidAmount")
-                        .IsRequired();
-
-                    b.Navigation("RemainingAmount")
+                    b.Navigation("UnitPrice")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Api.Domain.User", b =>
+            modelBuilder.Entity("User", b =>
+                {
+                    b.OwnsOne("Api.Domain.ValueObjects.UserName", "Name", b1 =>
+                        {
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)")
+                                .HasColumnName("Name");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("Users");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
+                    b.Navigation("Name")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Domain.Entities.Batch", b =>
                 {
                     b.Navigation("Orders");
+                });
 
+            modelBuilder.Entity("User", b =>
+                {
                     b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618

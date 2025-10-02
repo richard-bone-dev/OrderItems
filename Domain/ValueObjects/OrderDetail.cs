@@ -1,36 +1,40 @@
-﻿namespace Api.Domain.ValueObjects;
+﻿using Api.Domain.ValueObjects;
 
-//public sealed class BatchNumber : IEquatable<BatchNumber>
-//{
-//    public int Value { get; }
-//    public BatchNumber(int value)
-//    {
-//        if (value <= 0) throw new ArgumentException("Batch number must be positive.");
-//        Value = value;
-//    }
-//    public bool Equals(BatchNumber other) => other?.Value == Value;
-//    public override bool Equals(object obj) => Equals(obj as BatchNumber);
-//    public override int GetHashCode() => Value.GetHashCode();
-//}
+namespace Api.Domain.Entities;
 
 public sealed class OrderDetail : IEquatable<OrderDetail>
 {
-    public Money Total { get; }
-    public DateTime? OrderDate { get; }
+    public ProductTypeId ProductTypeId { get; }
+    public Money UnitPrice { get; }
+    public int Quantity { get; }
+    public Money Total => new(UnitPrice.Amount * Quantity);
+    public DateTime PlacedAt { get; }
     public DateTime? DueDate { get; }
 
     private OrderDetail() { }
 
-    public OrderDetail(Money total, DateTime? orderDate = null, DateTime? dueDate = null)
+    public OrderDetail(ProductTypeId productTypeId, Money unitPrice, int quantity, DateTime placedAt, DateTime? dueDate = null)
     {
-        Total = total ?? throw new ArgumentNullException(nameof(total));
-        OrderDate = orderDate ?? DateTime.Now;
-        DueDate = dueDate ?? DateTime.Now;
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be positive.");
+
+        ProductTypeId = productTypeId ?? throw new ArgumentNullException(nameof(productTypeId));
+        UnitPrice = unitPrice ?? throw new ArgumentNullException(nameof(unitPrice));
+        Quantity = quantity;
+        PlacedAt = placedAt;
+        DueDate = dueDate;
     }
 
     public bool Equals(OrderDetail? other)
-        => other is not null && Total.Equals(other.Total) && DueDate == other.DueDate;
+    {
+        return other is not null
+        && ProductTypeId == other.ProductTypeId
+        && UnitPrice.Equals(other.UnitPrice)
+        && Quantity == other.Quantity
+        && PlacedAt == other.PlacedAt
+        && DueDate == other.DueDate;
+    }
 
     public override bool Equals(object? obj) => Equals(obj as OrderDetail);
-    public override int GetHashCode() => HashCode.Combine(Total, DueDate);
+    public override int GetHashCode() => HashCode.Combine(ProductTypeId, UnitPrice, Quantity, PlacedAt, DueDate);
 }

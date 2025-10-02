@@ -1,82 +1,22 @@
-﻿namespace Api.Controllers;
-
-using Api.Application.Dtos;
-using Api.Application.Interfaces;
-using Api.Domain.Entities;
+﻿using Api.Application.ProductTypes.Commands;
+using Api.Application.ProductTypes.Commands.Handlers;
+using Api.Application.ProductTypes.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
+namespace Api.Controllers;
+
 [ApiController]
-[Route("api/productTypes")]
+[Route("api/product-types")]
 public class ProductTypesController : ControllerBase
 {
-    private readonly IProductTypeRepository _productTypeRepository;
+    private readonly CreateProductTypeHandler _createProductType;
 
-    public ProductTypesController(IProductTypeRepository productTypeRepository)
+    public ProductTypesController(CreateProductTypeHandler createProductType)
     {
-        _productTypeRepository = productTypeRepository;
+        _createProductType = createProductType;
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<ProductTypeDto>> GetProductTypes()
-    {
-        var productTypes = _productTypeRepository.GetAll();
-
-        return Ok(productTypes.OrderBy(p => p.UnitPrice).Select(ToProductTypeDto));
-    }
-
-    private static ProductTypeDto ToProductTypeDto(ProductType productType)
-    {
-        return new ProductTypeDto(productType.Id, productType.UnitPrice);
-    }
+    [HttpPost]
+    public async Task<ActionResult<ProductTypeDto>> Create([FromBody] CreateProductTypeCommand cmd, CancellationToken ct)
+        => Ok(await _createProductType.Handle(cmd, ct));
 }
-
-//[Route("api/payments")]
-//public class PaymentsController : ControllerBase
-//{
-//    private readonly IPaymentQueries _queries;
-
-//    public PaymentsController(IPaymentQueries queries) => _queries = queries;
-
-//    [HttpGet("{id:guid}/snapshot")]
-//    public async Task<ActionResult<PaymentSnapshotDto>> GetSnapshot(Guid id)
-//    {
-//        var result = await _queries.GetSnapshotAsync(id);
-//        return result is null ? NotFound() : Ok(result);
-//    }
-
-//    [HttpGet("{id:guid}/detail")]
-//    public async Task<ActionResult<PaymentDetailDto>> GetDetail(Guid id)
-//    {
-//        var result = await _queries.GetDetailAsync(id);
-//        return result is null ? NotFound() : Ok(result);
-//    }
-//}
-
-
-//[ApiController]
-//[Route("api/payments")]
-//public class PaymentsController : ControllerBase
-//{
-//    private readonly PaymentService _service;
-
-//    public PaymentsController(PaymentService service)
-//    {
-//        _service = service;
-//    }
-
-//    [HttpPost]
-//    public ActionResult<MakePaymentResponse> MakePayment(
-//        [FromRoute] UserId userId,
-//        [FromBody] MakePaymentRequest request)
-//    {
-//        var result = _service.MakePayment(userId, request);
-//        return Ok(result);
-//    }
-
-//    [HttpGet]
-//    public ActionResult<IEnumerable<PaymentDto>> GetUserPayments([FromRoute] UserId userId)
-//    {
-//        var payments = _service.GetUserPayments(userId);
-//        return Ok(payments);
-//    }
-//}

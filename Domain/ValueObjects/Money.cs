@@ -1,25 +1,26 @@
-﻿namespace Api.Domain.ValueObjects;
+﻿using Api.Domain.Core;
 
-public sealed class Money : IEquatable<Money>
+namespace Api.Domain.ValueObjects;
+
+public sealed class Money : ValueObject
 {
     public decimal Amount { get; }
+
+    private Money() { } // EF
+
     public Money(decimal amount)
     {
-        //if (amount < 0) throw new ArgumentException("Money amount cannot be negative.");
+        if (amount < 0) throw new ArgumentException("Money cannot be negative.");
         Amount = amount;
     }
 
-    public Money Add(Money other)
+    public Money Add(Money other) => new(Amount + other.Amount);
+    public Money Subtract(Money other) => new(Amount - other.Amount);
+
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        return new Money(Amount + other.Amount);
+        yield return Amount;
     }
 
-    public Money Subtract(Money other)
-    {
-        return new Money(Amount - other.Amount);
-    }
-
-    public bool Equals(Money other) => other is not null && Amount == other.Amount;
-    public override bool Equals(object obj) => Equals(obj as Money);
-    public override int GetHashCode() => HashCode.Combine(Amount);
+    public override string ToString() => Amount.ToString("C2");
 }

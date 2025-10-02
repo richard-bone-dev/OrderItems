@@ -1,60 +1,71 @@
-﻿using Api.Application.Dtos;
-using Api.Application.Interfaces;
+﻿using Api.Application.Users.Commands;
+using Api.Application.Users.Commands.Handlers;
+using Api.Application.Users.Dtos;
+using Api.Application.Users.Queries;
+using Api.Application.Users.Queries.Handlers;
 using Api.Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
+
+namespace Api.Controllers;
 
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase
 {
-    private readonly IUserService _userService;
-    private readonly IOrderService _orderService;
-    private readonly IPaymentService _paymentService;
-    private readonly IOrderPaymentService _orderPaymentService;
+    private readonly CreateUserHandler _createUser;
+    private readonly GetUsersHandler _getUsers;
+    private readonly GetUserStatementHandler _getStatement;
 
     public UsersController(
-        IUserService userService,
-        IOrderService orderService,
-        IPaymentService paymentService,
-        IOrderPaymentService orderPaymentService)
+        CreateUserHandler createUser,
+        GetUsersHandler getUsers,
+        GetUserStatementHandler getStatement)
     {
-        _userService = userService;
-        _orderService = orderService;
-        _paymentService = paymentService;
-        _orderPaymentService = orderPaymentService;
+        _createUser = createUser;
+        _getUsers = getUsers;
+        _getStatement = getStatement;
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<UserDto>> GetUsers()
-        => Ok(_userService.ListUsers());
-
+    /// <summary>
+    /// Create a new user
+    /// </summary>
     [HttpPost]
-    public ActionResult<UserDto> CreateUser([FromBody] CreateUserRequest request)
+    public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserCommand cmd, CancellationToken ct)
     {
-        var user = _userService.CreateUser(request);
-        return CreatedAtAction(nameof(GetUsers), new { userId = user.UserId }, user);
+        var result = await _createUser.Handle(cmd, ct);
+        return CreatedAtAction(nameof(GetById), new { userId = result.Id }, result);
     }
 
-    [HttpGet("{userId}/statement")]
-    public ActionResult<UserStatementResponse> GetStatement(UserId userId)
-        => Ok(_userService.GetStatement(userId));
-
-    [HttpPost("{userId}/orders")]
-    public ActionResult<PlaceOrderResponse> PlaceOrder(UserId userId, [FromBody] PlaceOrderRequest request)
-        => Ok(_orderService.PlaceOrder(userId, request));
-
-    [HttpPost("{userId}/order-with-payment")]
-    public ActionResult<object> PlaceOrderWithPayment(UserId userId, [FromBody] PlaceOrderWithPaymentRequest request)
+    /// <summary>
+    /// List all users
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers(CancellationToken ct)
     {
-        var result = _orderPaymentService.PlaceOrderWithPayment(userId, request.Order, request.PaymentAmount);
-        return Ok(result);
+        var users = await _getUsers.Handle(new GetUsersQuery(), ct);
+        return Ok(users);
     }
 
-    [HttpPost("{userId}/payments")]
-    public ActionResult<MakePaymentResponse> MakePayment(UserId userId, [FromBody] MakePaymentRequest request)
-        => Ok(_paymentService.MakePayment(userId, request));
+    /// <summary>
+    /// Get user by Id
+    /// </summary>
+    [HttpGet("{userId:guid}")]
+    public async Task<ActionResult<UserDto>> GetById(Guid userId, CancellationToken ct)
+    {
+        var users = await _getUsers.Handle(new GetUsersQuery(), ct);
+        var user = users.FirstOrDefault(u => u.Id == userId);
 
-    [HttpGet("{userId}/payments")]
-    public ActionResult<IEnumerable<PaymentDto>> GetUserPayments(UserId userId)
-        => Ok(_paymentService.GetUserPayments(userId));
+        if (user is null) return NotFound();
+        return Ok(user);
+    }
+
+    /// <summary>
+    /// Get user financial statement
+    /// </summary>
+    [HttpGet("{userId:guid}/statement")]
+    public async Task<ActionResult<UserStatementResponse>> GetStatement(Guid userId, CancellationToken ct)
+    {
+        var response = await _getStatement.Handle(new GetUserStatementQuery(new UserId(userId)), ct);
+        return Ok(response);
+    }
 }

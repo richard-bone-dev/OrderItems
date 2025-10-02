@@ -9,7 +9,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\Services\**" />
+    <Content Remove="Application\Services\**" />
+    <EmbeddedResource Remove="Application\Services\**" />
+    <None Remove="Application\Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Application\Abstractions\IOrderPaymentService.cs" />
+    <Compile Remove="Application\Abstractions\IOrderService.cs" />
+    <Compile Remove="Application\Abstractions\IPaymentRepository.cs" />
+    <Compile Remove="Application\Abstractions\IPaymentService.cs" />
+    <Compile Remove="Application\Abstractions\IProductTypeRepository.cs" />
+    <Compile Remove="Application\Abstractions\IUserService.cs" />
     <Compile Remove="Domain\Core\IdGenerator.cs" />
+    <Compile Remove="Domain\Core\StronglyTypedIntIdTypeConverter.cs" />
+    <Compile Remove="Domain\Events\OrderPlaced.cs" />
+    <Compile Remove="Domain\ValueObjects\PaymentState.cs" />
+    <Compile Remove="Domain\ValueObjects\PaymentStatusId.cs" />
+    <Compile Remove="Infrastructure\Repositories\OrderRepository.cs" />
+    <Compile Remove="Infrastructure\Repositories\PaymentRepository.cs" />
+    <Compile Remove="Infrastructure\Repositories\ProductTypeRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +45,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <PackageReference Include="Scrutor" Version="6.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\Orders\Queries\" />
+    <Folder Include="Application\ProductTypes\Queries\" />
   </ItemGroup>
 
 </Project>

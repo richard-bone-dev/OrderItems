@@ -1,12 +1,23 @@
 ﻿using Api.Domain.Core;
-using System.ComponentModel;
 
 namespace Api.Domain.ValueObjects;
 
-[TypeConverter(typeof(StronglyTypedIntIdTypeConverter<BatchNumber>))]
-public sealed class BatchNumber : StronglyTypedIntId<BatchNumber>
+public sealed class BatchNumber : ValueObject
 {
-    public BatchNumber(int value) : base(value) { }
+    public int Value { get; }
 
-    public static BatchNumber New(int value) => new(value);
+    private BatchNumber() { }
+
+    public BatchNumber(int value)
+    {
+        if (value <= 0) throw new ArgumentException("Batch number must be positive.");
+        Value = value;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Value;
+    }
+
+    public override string ToString() => Value.ToString();
 }
