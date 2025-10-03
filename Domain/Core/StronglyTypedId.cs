@@ -5,7 +5,7 @@ public abstract class StronglyTypedId<T> : IEquatable<StronglyTypedId<T>>
 {
     public Guid Value { get; }
 
-    //protected StronglyTypedId() { }
+    protected StronglyTypedId() { }
 
     protected StronglyTypedId(Guid value)
     {

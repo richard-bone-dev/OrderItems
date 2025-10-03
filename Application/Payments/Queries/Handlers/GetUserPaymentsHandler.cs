@@ -16,13 +16,13 @@ public class GetUserPaymentsHandler
     {
         return await _db.Payments
             .Where(p => p.UserId == new Domain.ValueObjects.UserId(query.UserId))
+            .OrderByDescending(p => p.PaymentDate)
             .Select(p => new PaymentDto(
                 p.Id.Value,
                 p.UserId.Value,
                 p.PaidAmount.Amount,
                 p.PaymentDate
             ))
-            .OrderByDescending(p => p.PaymentDate)
-            .ToListAsync(ct);
+            .ToListAsync();
     }
 }

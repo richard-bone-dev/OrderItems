@@ -6,6 +6,7 @@ namespace Api.Domain.ValueObjects;
 [TypeConverter(typeof(StronglyTypedIdTypeConverter<ProductTypeId>))]
 public sealed class ProductTypeId : StronglyTypedId<ProductTypeId>
 {
+    private ProductTypeId() : base() { }
     public ProductTypeId(Guid value) : base(value) { }
     public static ProductTypeId New() => new(Guid.NewGuid());
 }

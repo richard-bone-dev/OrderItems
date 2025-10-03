@@ -9,29 +9,30 @@ namespace Api.Infrastructure.Repositories;
 public class OrderRepository : IOrderRepository
 {
     private readonly ApplicationDbContext _db;
-    public OrderRepository(ApplicationDbContext db) => _db = db;
 
-    public Order GetById(OrderId orderId)
-        => _db.Orders.Single(p => p.Id == orderId);
-
-    public IEnumerable<Order> GetByUserId(UserId userId)
-        => _db.Orders
-              .Where(p => p.UserId == userId)
-              .AsNoTracking()
-              .ToList();
-
-    public void Save(Order order)
+    public OrderRepository(ApplicationDbContext db)
     {
-        var existing = _db.Orders.Find(order.Id);
-        if (existing == null)
-            throw new InvalidOperationException("Order not found.");
+        _db = db;
+    }
 
-        _db.Entry(existing).CurrentValues.SetValues(order);
-        _db.SaveChanges();
+    public async Task<IReadOnlyCollection<Order>> GetByUserIdAsync(UserId userId, CancellationToken ct = default)
+    {
+        return await _db.Orders
+            .Where(o => o.UserId == userId)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
 
-        //if (_db.Entry(order).State == EntityState.Detached)
-        //    _db.Orders.Add(order);
+    public async Task<IReadOnlyCollection<Order>> GetByBatchIdAsync(BatchId batchId, CancellationToken ct = default)
+    {
+        return await _db.Orders
+            .Where(o => o.BatchId == batchId)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
 
-        //_db.SaveChanges();
+    public async Task AddAsync(Order order, CancellationToken ct = default)
+    {
+        await _db.Orders.AddAsync(order, ct);
     }
 }

@@ -169,7 +169,15 @@ public static class DataSeeder
             context.SaveChanges();
         }
 
+        if (!context.Batches.Any())
+        {
+            var initialBatch = Batch.Create(new BatchNumber(1));
+            context.Batches.Add(initialBatch);
+            context.SaveChanges();
+        }
+
         var productTypeId = context.ProductTypes.OrderBy(pt => pt.UnitPrice.Amount).First().Id;
+        var batch = context.Batches.OrderByDescending(b => b.CreatedAt).First();
 
         if (!context.Users.Any(u => u.Name.Value == "None"))
             context.Users.Add(User.Register(new UserName("None")));
@@ -181,38 +189,29 @@ public static class DataSeeder
         {
             var starting = new Dictionary<string, decimal>
             {
-                ["None"] = 0m,
-                ["Admin"] = 0m,
-                ["Tropical"] = 57m + 14m + 11m + 8m + 11m + 11m,
-                ["Aussie"] = 37m + 4m + 4m + 4m + 4m + 4m + 4m + 4m,
-                ["Syd"] = 54m + 3m + 4m + 4m,
+                ["Aussie"] = 69m,
+                ["Syd"] = 69m - 10m,
+                ["Tropical"] = 62m,
                 ["Stu"] = 54.5m,
-                ["Rossweiler"] = 9m + 10m + 9.5m + 17m + 12 + 12m + 12m - 30m + 12m + 12m - 50m + 12m - 12m,
-                ["Sean"] = 19m + 4m,
-                ["MrSherg"] = 3m + 4m + 4m + 5m - 5m + 4m + 4m,
-                ["Saffer"] = 16m - 17m + 8m + 8m,
-                ["Tree"] = 8m + 4m + 4m,
-                ["BoatMK"] = 12m, 
+                ["Rossweiler"] = (37.5m) + (4m - 4m) + 17m + 12m + (10m - 5m) - 24m + 12m,
+                ["MrSherg"] = 19m + (4m - 4m),
+                ["Tree"] = 16m,
+                ["Saffer"] = 15m,
                 ["Landscaper"] = 12m,
                 ["SamDan"] = 12m,
-                ["Pill"] = 4m + 4m + 2m + 2m,
-                ["Kieran"] = 12m + 4m - 10m,
-                ["Wiggy"] = 4m + 4m,
-                ["BoatAnt"] = 2m + 4m,
+                ["Pill"] = 12m,
+                ["DanM"] = 10m,
+                ["Sean"] = (23m - 15m),
+                ["BoatMK"] = 8m,
+                ["Linc"] = 8m,
+                ["Jock"] = (8m - 5m) + 4m,
+                ["BoatAnt"] = 6m,
                 ["Crystal"] = 6m,
                 ["Bordeaux"] = 4m,
-                ["Linc"] = 4m,
                 ["Lara"] = 4m,
-                ["Pullen"] = 4m,
-                ["DanM"] = 4m,
-                ["Harry"] = 4m,
-                ["Parson"] = 4m,
-                //["Turtle"] = 4m - 4m,
-                //["Tall"] = 4m - 4m,
-                //["DT"] = 4m,
-                //["AM"] = 4m,
-                //["BigJo"] = 0m,
-                //["AJ"] = 0m,
+                ["Aidy"] = 4m,
+                ["Harry"] = 4m
+                //["Rossweiler-1"] = 19m + (12m - 12m) + 17m + (17m - 8.5m) + 12m + 12m + (-30 - 4m) + 12m + 12m - 50m + 12m + 17m,
             };
 
             var sorted = starting.OrderByDescending(c => c.Value);
@@ -224,12 +223,11 @@ public static class DataSeeder
 
                 if (balance > 0)
                 {
-                    //user.Place(
-                    //    new UserId(user.Id),
-                    //    new BatchNumber(1),
-                    //    productTypeId,
-                    //    new OrderDetail(new Money(balance * 10), null, null)
-                    //);
+                    var orderDetail = new OrderDetail(productTypeId, new Money(balance), DateTime.UtcNow);
+
+                    var order = Order.Create(new UserId(user.Id), batch.Id, orderDetail);
+
+                    user.AddOrder(order);
                 }
 
                 context.Users.Add(user);

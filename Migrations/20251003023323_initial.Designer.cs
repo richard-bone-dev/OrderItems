@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250915232344_edit")]
-    partial class edit
+    [Migration("20251003023323_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,6 +55,8 @@ namespace Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BatchId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Orders");
                 });
@@ -107,6 +109,23 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Api.Domain.Entities.Batch", b =>
                 {
+                    b.OwnsOne("Api.Domain.Entities.BatchStock", "Stock", b1 =>
+                        {
+                            b1.Property<Guid>("BatchId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Available")
+                                .HasColumnType("int")
+                                .HasColumnName("AvailableStock");
+
+                            b1.HasKey("BatchId");
+
+                            b1.ToTable("Batches");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BatchId");
+                        });
+
                     b.OwnsOne("Api.Domain.ValueObjects.BatchNumber", "Number", b1 =>
                         {
                             b1.Property<Guid>("BatchId")
@@ -126,6 +145,9 @@ namespace Api.Migrations
 
                     b.Navigation("Number")
                         .IsRequired();
+
+                    b.Navigation("Stock")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Api.Domain.Entities.Order", b =>
@@ -133,6 +155,12 @@ namespace Api.Migrations
                     b.HasOne("Api.Domain.Entities.Batch", null)
                         .WithMany("Orders")
                         .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -153,6 +181,10 @@ namespace Api.Migrations
                                 .HasColumnType("uniqueidentifier")
                                 .HasColumnName("ProductTypeId");
 
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int")
+                                .HasColumnName("Quantity");
+
                             b1.HasKey("OrderId");
 
                             b1.ToTable("Orders");
@@ -160,7 +192,7 @@ namespace Api.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("OrderId");
 
-                            b1.OwnsOne("Api.Domain.ValueObjects.Money", "Total", b2 =>
+                            b1.OwnsOne("Api.Domain.ValueObjects.Money", "UnitPrice", b2 =>
                                 {
                                     b2.Property<Guid>("OrderDetailOrderId")
                                         .HasColumnType("uniqueidentifier");
@@ -168,7 +200,7 @@ namespace Api.Migrations
                                     b2.Property<decimal>("Amount")
                                         .HasPrecision(18, 2)
                                         .HasColumnType("decimal(18,2)")
-                                        .HasColumnName("Total");
+                                        .HasColumnName("UnitPrice");
 
                                     b2.HasKey("OrderDetailOrderId");
 
@@ -178,7 +210,7 @@ namespace Api.Migrations
                                         .HasForeignKey("OrderDetailOrderId");
                                 });
 
-                            b1.Navigation("Total")
+                            b1.Navigation("UnitPrice")
                                 .IsRequired();
                         });
 
@@ -272,6 +304,8 @@ namespace Api.Migrations
 
             modelBuilder.Entity("User", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618

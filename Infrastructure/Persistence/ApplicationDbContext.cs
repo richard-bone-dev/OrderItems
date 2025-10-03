@@ -47,7 +47,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Batch>(b =>
         {
             b.HasKey(x => x.Id);
-            b.Property(x => x.Id).HasConversion(batchIdConverter);
+
+            b.Property(x => x.Id)
+                .HasConversion(batchIdConverter);
+
             b.Property(x => x.CreatedAt).IsRequired();
             b.Property(x => x.IsActive).IsRequired();
 
@@ -58,6 +61,13 @@ public class ApplicationDbContext : DbContext
                  .IsRequired();
             });
 
+            b.OwnsOne(x => x.Stock, stock =>
+            {
+                stock.Property(s => s.Available)
+                     .HasColumnName("AvailableStock")
+                     .IsRequired();
+            });
+
             b.HasMany(x => x.Orders)
              .WithOne()
              .HasForeignKey(o => o.BatchId);
@@ -66,25 +76,28 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Order>(b =>
         {
             b.HasKey(o => o.Id);
-            b.Property(o => o.Id).HasConversion(orderIdConverter);
-            b.Property(o => o.UserId).HasConversion(userIdConverter).IsRequired();
+
+            b.Property(o => o.Id)
+                .HasConversion(orderIdConverter);
+
+            b.Property(o => o.UserId)
+                .HasConversion(userIdConverter);
+
+            b.Property(o => o.BatchId)
+                .HasConversion(batchIdConverter);
 
             b.OwnsOne(o => o.OrderDetail, detail =>
             {
                 detail.Property(d => d.ProductTypeId)
-                .HasConversion(
-                id => id.Value,
-                value => new ProductTypeId(value))
-                .HasColumnName("ProductTypeId");
-
+                      .HasConversion(productTypeIdConverter)
+                      .HasColumnName("ProductTypeId");
 
                 detail.OwnsOne(d => d.UnitPrice, price =>
                 {
                     price.Property(p => p.Amount)
-                    .HasColumnName("UnitPrice")
-                    .HasPrecision(18, 2);
+                         .HasColumnName("UnitPrice")
+                         .HasPrecision(18, 2);
                 });
-
 
                 detail.Property(d => d.Quantity).HasColumnName("Quantity");
                 detail.Property(d => d.PlacedAt).HasColumnName("PlacedAt");

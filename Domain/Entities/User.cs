@@ -32,7 +32,7 @@ public class User : Entity<UserId>
 
     public void AddPayment(Payment payment)
     {
-        if (payment.UserId != Id)
+        if (payment.UserId.Value != Id.Value)
             throw new InvalidOperationException("Payment user mismatch.");
 
         _payments.Add(payment);
@@ -41,7 +41,7 @@ public class User : Entity<UserId>
 
     public void AddOrder(Order order)
     {
-        if (order.UserId != Id)
+        if (order.UserId.Value != Id.Value)
             throw new InvalidOperationException("Order user mismatch.");
 
         _orders.Add(order);

@@ -12,65 +12,66 @@ public class Batch : Entity<BatchId>
     private readonly List<Order> _orders = new();
     public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
-    private readonly List<BatchStock> _stocks = new();
-    public IReadOnlyCollection<BatchStock> Stocks => _stocks.AsReadOnly();
 
-    public void ReserveStock(ProductTypeId productTypeId, int quantity)
-    {
-        var line = _stocks.SingleOrDefault(s => s.ProductTypeId == productTypeId)
-            ?? throw new InvalidOperationException("Product not found in batch stock.");
-
-        line.Reserve(quantity);
-    }
+    private BatchStock _stock;
+    public BatchStock Stock => _stock;
 
     private Batch() { }
 
-    private Batch(BatchId id, BatchNumber number, DateTime createdAt, bool isActive)
+    private Batch(BatchId id, BatchNumber number, BatchStock stock, DateTime createdAt, bool isActive)
     {
         Id = id;
         Number = number;
         CreatedAt = createdAt;
         IsActive = isActive;
+        _stock = stock;
     }
 
-    public static Batch Create(BatchNumber number)
-        => new(BatchId.New(), number, DateTime.UtcNow, true);
+    public static Batch Create(BatchNumber number, int initialStock = 0)
+        => new(BatchId.New(), number, new BatchStock(initialStock), DateTime.UtcNow, true);
 
     public Order AddOrder(UserId userId, ProductTypeId productTypeId, Money total, DateTime placedAt, DateTime? dueDate = null, int quantity = 1)
     {
         if (!IsActive)
             throw new InvalidOperationException("Cannot add orders to a closed batch.");
 
-        ReserveStock(productTypeId, quantity);
+        ReserveStock(quantity);
 
-        var detail = new OrderDetail(productTypeId, total, quantity, placedAt, dueDate);
+        var detail = new OrderDetail(productTypeId, total, placedAt, quantity, dueDate);
         var order = Order.Create(userId, Id, detail);
         _orders.Add(order);
 
         return order;
     }
 
+    public void ReserveStock(int quantity) => _stock.Reserve(quantity);
+
     public void Close() => IsActive = false;
 }
 
-public class BatchStock
+
+public class BatchStock : ValueObject
 {
-    public ProductTypeId ProductTypeId { get; private set; }
     public int Available { get; private set; }
 
     private BatchStock() { }
 
-    public BatchStock(ProductTypeId productTypeId, int quantity)
+    public BatchStock(int available)
     {
-        ProductTypeId = productTypeId;
-        Available = quantity;
+        if (available < 0) throw new ArgumentOutOfRangeException(nameof(available));
+        Available = available;
     }
 
     public void Reserve(int quantity)
     {
         if (quantity > Available)
-            throw new InvalidOperationException("Insufficient batch stock for this product type.");
+            throw new InvalidOperationException("Insufficient stock.");
 
         Available -= quantity;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Available;
     }
 }
