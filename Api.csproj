@@ -18,10 +18,9 @@
   <ItemGroup>
     <Compile Remove="Application\Abstractions\IOrderPaymentService.cs" />
     <Compile Remove="Application\Abstractions\IOrderService.cs" />
-    <Compile Remove="Application\Abstractions\IPaymentRepository.cs" />
     <Compile Remove="Application\Abstractions\IPaymentService.cs" />
-    <Compile Remove="Application\Abstractions\IProductTypeRepository.cs" />
     <Compile Remove="Application\Abstractions\IUserService.cs" />
+    <Compile Remove="Application\Dtos\DtoMappingExtensions.cs" />
     <Compile Remove="Domain\Core\IdGenerator.cs" />
     <Compile Remove="Domain\Core\StronglyTypedIntIdTypeConverter.cs" />
     <Compile Remove="Domain\Events\OrderPlaced.cs" />

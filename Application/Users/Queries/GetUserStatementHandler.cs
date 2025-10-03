@@ -1,4 +1,5 @@
 ﻿using Api.Application.Abstractions;
+using Api.Application.Dtos;
 using Api.Application.Orders.Commands.Handlers;
 using Api.Application.Users.Dtos;
 using Api.Domain.ValueObjects;
@@ -43,15 +44,7 @@ public class GetUserStatementHandler : IQueryHandler<GetUserStatementQuery, User
         }
 
 
-        var orderDtos = orders.Select(order =>
-        {
-            var batchNumber = batchMap.TryGetValue(order.BatchId, out var number)
-            ? number
-            : new BatchNumber(0);
-
-
-            return OrderMapper.ToDto(order, batchNumber);
-        }).ToList();
+        var orderDtos = orders.Select(order => order.ToDto(batchMap)).ToList();
 
 
         var paymentDtos = user.Payments.Select(PaymentMapper.ToDto).ToList();

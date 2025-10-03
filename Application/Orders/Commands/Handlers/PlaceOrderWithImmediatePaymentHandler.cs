@@ -33,6 +33,8 @@ public class PlaceOrderWithImmediatePaymentHandler
         // Add order and immediate payment
         var order = batch.AddOrder(userId, productTypeId, total, DateTime.UtcNow);
         var payment = Payment.Create(userId, total.Amount, DateTime.UtcNow);
+
+        user.AddOrder(order); 
         user.AddPayment(payment);
 
         await _batchRepo.SaveChangesAsync(ct);

@@ -9,3 +9,4 @@ public interface IBatchRepository
     Task AddAsync(Batch batch, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
 }
+

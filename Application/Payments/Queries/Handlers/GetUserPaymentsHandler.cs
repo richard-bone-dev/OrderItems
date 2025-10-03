@@ -1,28 +1,19 @@
 ﻿using Api.Application.Abstractions;
+using Api.Application.Orders.Commands.Handlers;
 using Api.Application.Payments.Dtos;
-using Api.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using Api.Domain.ValueObjects;
 
 namespace Api.Application.Payments.Queries.Handlers;
 
 public class GetUserPaymentsHandler
     : IQueryHandler<GetUserPaymentsQuery, IEnumerable<PaymentDto>>
 {
-    private readonly ApplicationDbContext _db;
-
-    public GetUserPaymentsHandler(ApplicationDbContext db) => _db = db;
+    private readonly IPaymentRepository _repo;
+    public GetUserPaymentsHandler(IPaymentRepository repo) => _repo = repo;
 
     public async Task<IEnumerable<PaymentDto>> Handle(GetUserPaymentsQuery query, CancellationToken ct = default)
     {
-        return await _db.Payments
-            .Where(p => p.UserId == new Domain.ValueObjects.UserId(query.UserId))
-            .OrderByDescending(p => p.PaymentDate)
-            .Select(p => new PaymentDto(
-                p.Id.Value,
-                p.UserId.Value,
-                p.PaidAmount.Amount,
-                p.PaymentDate
-            ))
-            .ToListAsync();
+        var payments = await _repo.GetByUserIdAsync(new UserId(query.UserId), ct);
+        return payments is null ? null : payments.Select(PaymentMapper.ToDto);
     }
 }

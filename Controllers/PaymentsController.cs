@@ -1,4 +1,5 @@
-﻿using Api.Application.Payments.Dtos;
+﻿using Api.Application.Payments.Commands;
+using Api.Application.Payments.Dtos;
 using Api.Application.Payments.Queries;
 using Api.Application.Payments.Queries.Handlers;
 using Microsoft.AspNetCore.Mvc;

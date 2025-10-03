@@ -67,4 +67,24 @@ public static class OrderMapper
         order.OrderDetail.PlacedAt,
         order.OrderDetail.DueDate
     );
+
+    public static OrderDto ToDto(this Order order, Dictionary<BatchId, BatchNumber> batchMap)
+    {
+        var batchNumber = batchMap.TryGetValue(order.BatchId, out var bn)
+            ? bn.Value
+            : 0;
+
+        return new OrderDto(
+            order.Id.Value,
+            order.UserId.Value,
+            order.BatchId.Value,
+            batchNumber,
+            order.OrderDetail.ProductTypeId.Value,
+            order.OrderDetail.UnitPrice.Amount,
+            order.OrderDetail.Quantity,
+            order.OrderDetail.Total.Amount,
+            order.OrderDetail.PlacedAt,
+            order.OrderDetail.DueDate
+        );
+    }
 }
