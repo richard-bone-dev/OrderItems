@@ -10,10 +10,7 @@ public class OrderRepository : IOrderRepository
 {
     private readonly ApplicationDbContext _db;
 
-    public OrderRepository(ApplicationDbContext db)
-    {
-        _db = db;
-    }
+    public OrderRepository(ApplicationDbContext db) => _db = db;
 
     public async Task<IReadOnlyCollection<Order>> GetByUserIdAsync(UserId userId, CancellationToken ct = default)
     {
@@ -27,6 +24,13 @@ public class OrderRepository : IOrderRepository
     {
         return await _db.Orders
             .Where(o => o.BatchId == batchId)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyCollection<Order>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _db.Orders
             .AsNoTracking()
             .ToListAsync(ct);
     }

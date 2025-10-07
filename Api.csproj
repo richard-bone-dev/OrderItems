@@ -26,7 +26,6 @@
     <Compile Remove="Domain\Events\OrderPlaced.cs" />
     <Compile Remove="Domain\ValueObjects\PaymentState.cs" />
     <Compile Remove="Domain\ValueObjects\PaymentStatusId.cs" />
-    <Compile Remove="Infrastructure\Repositories\ProductTypeRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

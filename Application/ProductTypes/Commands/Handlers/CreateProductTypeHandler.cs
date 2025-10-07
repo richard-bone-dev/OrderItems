@@ -2,23 +2,20 @@
 using Api.Application.ProductTypes.Dtos;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
-using Api.Infrastructure.Persistence;
 
 namespace Api.Application.ProductTypes.Commands.Handlers;
 
 public class CreateProductTypeHandler
     : ICommandHandler<CreateProductTypeCommand, ProductTypeDto>
 {
-    private readonly ApplicationDbContext _db;
+    private readonly IProductTypeRepository _repo;
 
-    public CreateProductTypeHandler(ApplicationDbContext db) => _db = db;
+    public CreateProductTypeHandler(IProductTypeRepository repo) => _repo = repo;
 
     public async Task<ProductTypeDto> Handle(CreateProductTypeCommand cmd, CancellationToken ct = default)
     {
         var productType = ProductType.Create(cmd.Name, new Money(cmd.UnitPrice));
-
-        await _db.ProductTypes.AddAsync(productType, ct);
-        await _db.SaveChangesAsync(ct);
+        await _repo.AddAsync(productType, ct);
 
         return new ProductTypeDto(
             productType.Id.Value,

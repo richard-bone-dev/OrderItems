@@ -1,25 +1,20 @@
 ﻿using Api.Application.Abstractions;
-using Api.Application.Batches.Commands;
 using Api.Application.Batches.Dtos;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
-using Api.Infrastructure.Persistence;
 
 namespace Api.Application.Batches.Commands.Handlers;
 
-public class CreateBatchHandler
-    : ICommandHandler<CreateBatchCommand, BatchDto>
+public class CreateBatchHandler : ICommandHandler<CreateBatchCommand, BatchDto>
 {
-    private readonly ApplicationDbContext _db;
+    private readonly IBatchRepository _repo;
 
-    public CreateBatchHandler(ApplicationDbContext db) => _db = db;
+    public CreateBatchHandler(IBatchRepository repo) => _repo = repo;
 
     public async Task<BatchDto> Handle(CreateBatchCommand cmd, CancellationToken ct = default)
     {
         var batch = Batch.Create(new BatchNumber(cmd.Number));
-
-        await _db.Batches.AddAsync(batch, ct);
-        await _db.SaveChangesAsync(ct);
+        await _repo.AddAsync(batch, ct);
 
         return new BatchDto(
             batch.Id.Value,

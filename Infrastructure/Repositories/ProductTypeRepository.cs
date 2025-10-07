@@ -11,20 +11,15 @@ public class ProductTypeRepository : IProductTypeRepository
     private readonly ApplicationDbContext _db;
     public ProductTypeRepository(ApplicationDbContext db) => _db = db;
 
-    public ProductType GetById(ProductTypeId productTypeId)
-        => _db.ProductTypes
-              .Single(u => u.Id == productTypeId);
 
-    public IEnumerable<ProductType> GetAll()
-        => _db.ProductTypes.AsNoTracking().ToList();
+    public async Task<ProductType?> GetByIdAsync(ProductTypeId id, CancellationToken ct = default)
+    => await _db.ProductTypes.FirstOrDefaultAsync(p => p.Id == id, ct);
 
-    public void Save(ProductType productType)
-    {
-        var existing = _db.ProductTypes.Find(productType.Id);
-        if (existing == null)
-            throw new InvalidOperationException("ProductType not found.");
 
-        _db.Entry(existing).CurrentValues.SetValues(productType);
-        _db.SaveChanges();
-    }
+    public async Task<IReadOnlyCollection<ProductType>> GetAllAsync(CancellationToken ct = default)
+    => await _db.ProductTypes.ToListAsync(ct);
+
+
+    public async Task AddAsync(ProductType productType, CancellationToken ct = default)
+    => await _db.ProductTypes.AddAsync(productType, ct);
 }
