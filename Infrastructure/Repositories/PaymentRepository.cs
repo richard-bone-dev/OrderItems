@@ -11,20 +11,15 @@ public class PaymentRepository : IPaymentRepository
     private readonly ApplicationDbContext _db;
     public PaymentRepository(ApplicationDbContext db) => _db = db;
 
-    public Payment GetById(PaymentId paymentId)
-        => _db.Payments.Single(p => p.Id == paymentId);
+    public async Task SaveChangesAsync(CancellationToken ct = default)
+        => _db.SaveChangesAsync(ct);
 
-    public IEnumerable<Payment> GetByUserId(UserId userId)
-        => _db.Payments
-              .Where(p => p.UserId == userId)
-              .AsNoTracking()
-              .ToList();
+    public async Task AddAsync(Payment payment, CancellationToken ct = default) 
+        => _db.Payments.AddAsync(payment, ct).AsTask();
 
-    public void Save(Payment payment)
-    {
-        if (_db.Entry(payment).State == EntityState.Detached)
-            _db.Payments.Add(payment);
+    public async Task<Payment?> GetByIdAsync(PaymentId id, CancellationToken ct) 
+        => await _db.Payments.FirstOrDefaultAsync(b => b.Id == id, ct);
 
-        _db.SaveChanges();
-    }
+    public async Task<IReadOnlyCollection<Payment>> GetByUserIdAsync(UserId userId, CancellationToken ct = default)
+        => await _db.Payments.Where(b => b.UserId == userId).ToListAsync();
 }

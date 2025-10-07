@@ -3,13 +3,9 @@ using Api.Domain.Core;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 using Api.Infrastructure.Persistence;
-using Api.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Scrutor;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Linq;
 
 namespace Api;
 
@@ -189,28 +185,32 @@ public static class DataSeeder
         {
             var starting = new Dictionary<string, decimal>
             {
-                ["Aussie"] = 69m,
-                ["Syd"] = 69m - 10m,
-                ["Tropical"] = 62m,
-                ["Stu"] = 54.5m,
-                ["Rossweiler"] = (37.5m) + (4m - 4m) + 17m + 12m + (10m - 5m) - 24m + 12m,
-                ["MrSherg"] = 19m + (4m - 4m),
-                ["Tree"] = 16m,
-                ["Saffer"] = 15m,
-                ["Landscaper"] = 12m,
-                ["SamDan"] = 12m,
-                ["Pill"] = 12m,
+                //["Aussie"] = 69m,
+                //["Syd"] = 69m - 10m,
+                ["Tropical"] = 62m + 10m + 8m,
+                //["Stu"] = 54.5m,
+                ["Rossweiler"] = ((((23.5m) + (4m - 4m) + 17m - 4m + 12m + (10m - 5m) - 24m + 12m) + 12m - 5m) - 20m) + 4m + 4m + 12m + 12m,
+                //["MrSherg"] = 19m + (4m - 4m) - 8m,
+                ["Tree"] = (4m + 4m) + 4m,
+                ["Saffer"] = 15m + (- 4m) + (- 10m + 8m) + 8m,
+                //["Landscaper"] = 12m,
+                //["SamDan"] = 12m,
+                //["Pill"] = 12m,
                 ["DanM"] = 10m,
-                ["Sean"] = (23m - 15m),
+                //["Sean"] = (23m - 15m) + 4m,
                 ["BoatMK"] = 8m,
+                ["Kieran"] = 8m,
                 ["Linc"] = 8m,
-                ["Jock"] = (8m - 5m) + 4m,
+                //["Tracey"] = 8m,
+                ["Jock"] = 4m,
                 ["BoatAnt"] = 6m,
-                ["Crystal"] = 6m,
-                ["Bordeaux"] = 4m,
+                //["Crystal"] = 6m,
+                ["Wiggy"] = 4m,
+                //["Bordeaux"] = 4m,
                 ["Lara"] = 4m,
-                ["Aidy"] = 4m,
-                ["Harry"] = 4m
+                //["Aidy"] = 4m,
+                ["Harry"] = 4m,
+                ["Darren"] = 4m + 14m
                 //["Rossweiler-1"] = 19m + (12m - 12m) + 17m + (17m - 8.5m) + 12m + 12m + (-30 - 4m) + 12m + 12m - 50m + 12m + 17m,
             };
 

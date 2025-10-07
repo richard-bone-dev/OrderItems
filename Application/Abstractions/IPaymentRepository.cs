@@ -1,5 +1,4 @@
-﻿// Shared/FakeRepositories/FakeUserRepository.cs
-using Api.Domain.Entities;
+﻿using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 
 namespace Api.Application.Abstractions;
