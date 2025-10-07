@@ -13,7 +13,7 @@ public class PaymentRepository : IPaymentRepository
 
 
     public async Task<Payment?> GetByIdAsync(PaymentId id, CancellationToken ct = default)
-    => await _db.Payments.FirstOrDefaultAsync(p => p.Id == id, ct);
+    => await _db.Payments.FirstOrDefaultAsync(p => p.Id.Value == id.Value, ct);
 
 
     public async Task<IReadOnlyCollection<Payment>> GetByUserIdAsync(UserId userId, CancellationToken ct = default)
