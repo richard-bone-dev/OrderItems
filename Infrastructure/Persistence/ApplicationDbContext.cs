@@ -1,31 +1,41 @@
 ﻿using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Api.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-    public DbSet<User> Users { get; set; }
+    public DbSet<Customer> Customers { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<ProductType> ProductTypes { get; set; }
     public DbSet<Batch> Batches { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        // --- Converters for StronglyTypedIds ---
-        var userIdConverter = new ValueConverter<UserId, Guid>(id => id.Value, value => new UserId(value));
+        base.OnModelCreating(builder);
+
+        var userIdConverter = new ValueConverter<CustomerId, Guid>(id => id.Value, value => new CustomerId(value));
         var orderIdConverter = new ValueConverter<OrderId, Guid>(id => id.Value, value => new OrderId(value));
         var paymentIdConverter = new ValueConverter<PaymentId, Guid>(id => id.Value, value => new PaymentId(value));
         var productTypeIdConverter = new ValueConverter<ProductTypeId, Guid>(id => id.Value, value => new ProductTypeId(value));
         var batchIdConverter = new ValueConverter<BatchId, Guid>(id => id.Value, value => new BatchId(value));
 
-        // --- User entity ---
-        modelBuilder.Entity<User>(b =>
+        builder.Entity<IdentityUser>();
+        builder.Entity<IdentityRole>();
+        builder.Entity<IdentityUserRole<string>>();
+        builder.Entity<IdentityUserClaim<string>>();
+        builder.Entity<IdentityUserLogin<string>>();
+        builder.Entity<IdentityRoleClaim<string>>();
+        builder.Entity<IdentityUserToken<string>>();
+
+        builder.Entity<Customer>(b =>
         {
             b.HasKey(u => u.Id);
             b.Property(u => u.Id).HasConversion(userIdConverter);
@@ -44,7 +54,7 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(p => p.UserId);
         });
 
-        modelBuilder.Entity<Batch>(b =>
+        builder.Entity<Batch>(b =>
         {
             b.HasKey(x => x.Id);
 
@@ -73,21 +83,21 @@ public class ApplicationDbContext : DbContext
              .HasForeignKey(o => o.BatchId);
         });
 
-        modelBuilder.Entity<Order>(b =>
+        builder.Entity<Order>(b =>
         {
             b.HasKey(o => o.Id);
 
-            b.Property(o => o.Id)
-                .HasConversion(orderIdConverter);
+            b.Property(o => o.Id).HasConversion(orderIdConverter);
+            b.Property(o => o.UserId).HasConversion(userIdConverter);
+            b.Property(o => o.BatchId).HasConversion(batchIdConverter);
 
-            b.Property(o => o.UserId)
-                .HasConversion(userIdConverter);
-
-            b.Property(o => o.BatchId)
-                .HasConversion(batchIdConverter);
-
-            b.OwnsOne(o => o.OrderDetail, detail =>
+            b.OwnsMany(o => o.OrderDetails, detail =>
             {
+                detail.WithOwner().HasForeignKey("OrderId");
+
+                detail.Property<Guid>("Id");
+                detail.HasKey("Id");
+
                 detail.Property(d => d.ProductTypeId)
                       .HasConversion(productTypeIdConverter)
                       .HasColumnName("ProductTypeId");
@@ -102,11 +112,12 @@ public class ApplicationDbContext : DbContext
                 detail.Property(d => d.Quantity).HasColumnName("Quantity");
                 detail.Property(d => d.PlacedAt).HasColumnName("PlacedAt");
                 detail.Property(d => d.DueDate).HasColumnName("DueDate");
+
+                detail.ToTable("OrderDetails");
             });
         });
 
-        // --- Payment entity ---
-        modelBuilder.Entity<Payment>(b =>
+        builder.Entity<Payment>(b =>
         {
             b.HasKey(p => p.Id);
             b.Property(p => p.Id).HasConversion(paymentIdConverter);
@@ -122,8 +133,7 @@ public class ApplicationDbContext : DbContext
             b.Property(p => p.PaymentDate).IsRequired();
         });
 
-        // --- ProductType entity ---
-        modelBuilder.Entity<ProductType>(b =>
+        builder.Entity<ProductType>(b =>
         {
             b.HasKey(pt => pt.Id);
             b.Property(pt => pt.Id).HasConversion(productTypeIdConverter);

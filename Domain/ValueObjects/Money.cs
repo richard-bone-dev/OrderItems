@@ -4,11 +4,11 @@ namespace Api.Domain.ValueObjects;
 
 public sealed class Money : ValueObject
 {
-    public decimal Amount { get; }
+    public decimal? Amount { get; }
 
     private Money() { } // EF
 
-    public Money(decimal amount)
+    public Money(decimal? amount)
     {
         if (amount < 0) throw new ArgumentException("Money cannot be negative.");
         Amount = amount;
@@ -22,5 +22,5 @@ public sealed class Money : ValueObject
         yield return Amount;
     }
 
-    public override string ToString() => Amount.ToString("C2");
+    public override string ToString() => Amount!.Value.ToString("C2");
 }

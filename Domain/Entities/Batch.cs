@@ -30,7 +30,7 @@ public class Batch : Entity<BatchId>
     public static Batch Create(BatchNumber number, int initialStock = 0)
         => new(BatchId.New(), number, new BatchStock(initialStock), DateTime.UtcNow, true);
 
-    public Order AddOrder(UserId userId, ProductTypeId productTypeId, Money total, DateTime placedAt, DateTime? dueDate = null, int quantity = 1)
+    public Order AddOrder(CustomerId userId, ProductTypeId productTypeId, Money total, DateTime placedAt, DateTime? dueDate = null, int quantity = 1)
     {
         if (!IsActive)
             throw new InvalidOperationException("Cannot add orders to a closed batch.");
@@ -38,7 +38,7 @@ public class Batch : Entity<BatchId>
         ReserveStock(quantity);
 
         var detail = new OrderDetail(productTypeId, total, placedAt, quantity, dueDate);
-        var order = Order.Create(userId, Id, detail);
+        var order = Order.Create(userId, Id, [detail]);
         _orders.Add(order);
 
         return order;

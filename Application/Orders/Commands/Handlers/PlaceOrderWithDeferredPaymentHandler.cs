@@ -18,7 +18,7 @@ public class PlaceOrderWithDeferredPaymentHandler
 
     public async Task<OrderDto> Handle(PlaceOrderWithDeferredPaymentCommand cmd, CancellationToken ct = default)
     {
-        var userId = new UserId(cmd.UserId);
+        var userId = new CustomerId(cmd.UserId);
         var batchId = new BatchId(cmd.BatchId);
         var productTypeId = new ProductTypeId(cmd.ProductTypeId);
 

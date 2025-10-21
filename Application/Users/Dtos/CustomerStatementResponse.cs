@@ -1,14 +1,14 @@
 ﻿using Api.Application.Orders.Dtos;
 using Api.Application.Payments.Dtos;
 
-namespace Api.Application.Users.Dtos;
+namespace Api.Application.Customers.Dtos;
 
-public record UserStatementResponse(
+public record CustomerStatementResponse(
     Guid UserId,
     string UserName,
-    decimal TotalCharged,
-    decimal TotalPaid,
-    decimal Balance,
+    decimal? TotalCharged,
+    decimal? TotalPaid,
+    decimal? Balance,
     IEnumerable<OrderDto> Orders,
     IEnumerable<PaymentDto> Payments
 );

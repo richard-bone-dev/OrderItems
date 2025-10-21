@@ -1,6 +1,6 @@
-﻿namespace Api.Application.Users.Dtos;
+﻿namespace Api.Application.Customers.Dtos;
 
-public record UserDto(Guid Id, string Name, DateTime RegisteredAt);
+public record CustomerDto(Guid Id, string Name, DateTime RegisteredAt);
 
 /*
     {

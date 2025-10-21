@@ -19,7 +19,7 @@ public class PlaceOrderWithImmediatePaymentHandler
 
     public async Task<OrderDto> Handle(PlaceOrderWithImmediatePaymentCommand cmd, CancellationToken ct = default)
     {
-        var userId = new UserId(cmd.UserId);
+        var userId = new CustomerId(cmd.UserId);
         var batchId = new BatchId(cmd.BatchId);
         var productTypeId = new ProductTypeId(cmd.ProductTypeId);
 
@@ -32,7 +32,7 @@ public class PlaceOrderWithImmediatePaymentHandler
 
         // Add order and immediate payment
         var order = batch.AddOrder(userId, productTypeId, total, DateTime.UtcNow);
-        var payment = Payment.Create(userId, total.Amount, DateTime.UtcNow);
+        var payment = Payment.Create(userId, total.Amount.Value, DateTime.UtcNow);
 
         user.AddOrder(order); 
         user.AddPayment(payment);

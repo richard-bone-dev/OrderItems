@@ -6,9 +6,9 @@ public record OrderDto(
     Guid BatchId,
     int BatchNumber,
     Guid ProductTypeId,
-    decimal UnitPrice,
+    decimal? UnitPrice,
     int Quantity,
-    decimal Total,
+    decimal? Total,
     DateTime PlacedAt,
     DateTime? DueDate
 );

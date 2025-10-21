@@ -3,10 +3,10 @@ using System.ComponentModel;
 
 namespace Api.Domain.ValueObjects;
 
-[TypeConverter(typeof(StronglyTypedIdTypeConverter<UserId>))]
-public sealed class UserId : StronglyTypedId<UserId>
+[TypeConverter(typeof(StronglyTypedIdTypeConverter<CustomerId>))]
+public sealed class CustomerId : StronglyTypedId<CustomerId>
 {
     //public UserId() : base() { }
-    public UserId(Guid value) : base(value) { }
-    public static UserId New() => new(Guid.NewGuid());
+    public CustomerId(Guid value) : base(value) { }
+    public static CustomerId New() => new(Guid.NewGuid());
 }

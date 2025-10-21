@@ -13,7 +13,7 @@ public class GetUserPaymentsHandler
 
     public async Task<IEnumerable<PaymentDto>> Handle(GetUserPaymentsQuery query, CancellationToken ct = default)
     {
-        var payments = await _repo.GetByUserIdAsync(new UserId(query.UserId), ct);
+        var payments = await _repo.GetByUserIdAsync(new CustomerId(query.UserId), ct);
         return payments is null ? null : payments.Select(PaymentMapper.ToDto);
     }
 }

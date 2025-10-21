@@ -10,7 +10,7 @@ public record PaymentHistoryDto(
 public record PaymentDto(
     Guid PaymentId,
     Guid UserId,
-    decimal PaidAmount,
+    decimal? PaidAmount,
     DateTime PaymentDate
 );
 
@@ -26,7 +26,7 @@ public record PaymentDto(
 public record PaymentDetailDto(
     Guid Id,
     Guid UserId,
-    decimal Amount,
+    decimal? Amount,
     DateTime PaymentDate
 );
 

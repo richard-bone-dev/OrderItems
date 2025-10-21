@@ -16,7 +16,7 @@ public class PaymentRepository : IPaymentRepository
     => await _db.Payments.FirstOrDefaultAsync(p => p.Id.Value == id.Value, ct);
 
 
-    public async Task<IReadOnlyCollection<Payment>> GetByUserIdAsync(UserId userId, CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<Payment>> GetByUserIdAsync(CustomerId userId, CancellationToken ct = default)
     => await _db.Payments.Where(p => p.UserId == userId).ToListAsync(ct);
 
 

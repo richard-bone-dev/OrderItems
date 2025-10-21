@@ -3,7 +3,7 @@
 public record ProductTypeDto(
     Guid Id,
     string Name,
-    decimal UnitPrice
+    decimal? UnitPrice
 );
 
 /*

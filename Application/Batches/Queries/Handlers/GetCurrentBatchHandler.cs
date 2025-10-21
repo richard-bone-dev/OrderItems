@@ -1,6 +1,5 @@
 ﻿using Api.Application.Abstractions;
 using Api.Application.Batches.Dtos;
-using Api.Application.Batches.Queries;
 using Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

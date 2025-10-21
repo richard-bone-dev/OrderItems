@@ -1,19 +1,19 @@
 ﻿using Api.Application.Abstractions;
 using Api.Application.Dtos;
 using Api.Application.Orders.Commands.Handlers;
-using Api.Application.Users.Dtos;
+using Api.Application.Customers.Dtos;
 using Api.Domain.ValueObjects;
 
-namespace Api.Application.Users.Queries.Handlers;
+namespace Api.Application.Customers.Queries.Handlers;
 
-public class GetUserStatementHandler : IQueryHandler<GetUserStatementQuery, UserStatementResponse>
+public class GetCustomerStatementHandler : IQueryHandler<GetCustomerStatementQuery, CustomerStatementResponse>
 {
     private readonly IUserRepository _userRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IBatchRepository _batchRepository;
 
 
-    public GetUserStatementHandler(IUserRepository userRepository, IOrderRepository orderRepository, IBatchRepository batchRepository)
+    public GetCustomerStatementHandler(IUserRepository userRepository, IOrderRepository orderRepository, IBatchRepository batchRepository)
     {
         _userRepository = userRepository;
         _orderRepository = orderRepository;
@@ -21,9 +21,9 @@ public class GetUserStatementHandler : IQueryHandler<GetUserStatementQuery, User
     }
 
 
-    public async Task<UserStatementResponse> Handle(GetUserStatementQuery query, CancellationToken ct)
+    public async Task<CustomerStatementResponse> Handle(GetCustomerStatementQuery query, CancellationToken ct)
     {
-        var userId = new UserId(query.UserId);
+        var userId = new CustomerId(query.UserId);
 
 
         var user = await _userRepository.GetByIdAsync(userId, ct)
@@ -50,7 +50,7 @@ public class GetUserStatementHandler : IQueryHandler<GetUserStatementQuery, User
         var paymentDtos = user.Payments.Select(PaymentMapper.ToDto).ToList();
 
 
-        return new UserStatementResponse(
+        return new CustomerStatementResponse(
             user.Id.Value,
             user.Name.Value,
             user.TotalCharged.Amount,

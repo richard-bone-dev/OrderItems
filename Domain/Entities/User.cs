@@ -3,7 +3,7 @@ using Api.Domain.Entities;
 using Api.Domain.Events;
 using Api.Domain.ValueObjects;
 
-public class User : Entity<UserId>
+public class Customer : Entity<CustomerId>
 {
     public UserName Name { get; private set; }
     public DateTime RegisteredAt { get; private set; }
@@ -14,21 +14,25 @@ public class User : Entity<UserId>
     private readonly List<Order> _orders = new();
     public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
-    public Money TotalCharged => _orders.Aggregate(new Money(0m), (sum, o) => sum.Add(o.OrderDetail.Total));
+    public Money TotalCharged =>
+        new Money(_orders
+            .SelectMany(o => o.OrderDetails)
+            .Sum(d => d.Total.Amount));
+
     public Money TotalPaid => _payments.Aggregate(new Money(0m), (sum, p) => sum.Add(p.PaidAmount));
     public Money Balance => TotalCharged.Subtract(TotalPaid);
 
-    private User() { }
+    private Customer() { }
 
-    private User(UserId id, UserName name, DateTime registeredAt)
+    private Customer(CustomerId id, UserName name, DateTime registeredAt)
     {
         Id = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
         RegisteredAt = registeredAt;
     }
 
-    public static User Register(UserName name)
-        => new(UserId.New(), name, DateTime.UtcNow);
+    public static Customer Register(UserName name)
+        => new(CustomerId.New(), name, DateTime.UtcNow);
 
     public void AddPayment(Payment payment)
     {

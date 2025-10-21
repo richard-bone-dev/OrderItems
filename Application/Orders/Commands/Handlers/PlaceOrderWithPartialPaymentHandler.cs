@@ -1,6 +1,7 @@
 ﻿using Api.Application.Abstractions;
 using Api.Application.Orders.Dtos;
 using Api.Application.Payments.Dtos;
+using Api.Application.ProductTypes.Dtos;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 
@@ -20,7 +21,7 @@ public class PlaceOrderWithPartialPaymentHandler
 
     public async Task<OrderDto> Handle(PlaceOrderWithPartialPaymentCommand cmd, CancellationToken ct = default)
     {
-        var userId = new UserId(cmd.UserId);
+        var userId = new CustomerId(cmd.UserId);
         var batchId = new BatchId(cmd.BatchId);
         var productTypeId = new ProductTypeId(cmd.ProductTypeId);
 
@@ -43,6 +44,15 @@ public class PlaceOrderWithPartialPaymentHandler
     }
 }
 
+public static class ProductTypeMapper
+{
+    public static ProductTypeDto ToDto(ProductType productType) => new(
+        productType.Id.Value,
+        productType.Name,
+        productType.UnitPrice.Amount.HasValue ? productType.UnitPrice.Amount.Value : null
+    );
+}
+
 public static class PaymentMapper
 {
     public static PaymentDto ToDto(Payment payment) => new(
@@ -60,12 +70,12 @@ public static class OrderMapper
         order.UserId.Value,
         order.BatchId.Value,
         batchNumber.Value,
-        order.OrderDetail.ProductTypeId.Value,
-        order.OrderDetail.UnitPrice.Amount,
-        order.OrderDetail.Quantity,
-        order.OrderDetail.Total.Amount,
-        order.OrderDetail.PlacedAt,
-        order.OrderDetail.DueDate
+        order.OrderDetails.First().ProductTypeId.Value,
+        order.OrderDetails.First().UnitPrice.Amount,
+        order.OrderDetails.First().Quantity,
+        order.OrderDetails.First().Total.Amount,
+        order.OrderDetails.First().PlacedAt,
+        order.OrderDetails.First().DueDate
     );
 
     public static OrderDto ToDto(this Order order, Dictionary<BatchId, BatchNumber> batchMap)
@@ -79,12 +89,12 @@ public static class OrderMapper
             order.UserId.Value,
             order.BatchId.Value,
             batchNumber,
-            order.OrderDetail.ProductTypeId.Value,
-            order.OrderDetail.UnitPrice.Amount,
-            order.OrderDetail.Quantity,
-            order.OrderDetail.Total.Amount,
-            order.OrderDetail.PlacedAt,
-            order.OrderDetail.DueDate
+            order.OrderDetails.First().ProductTypeId.Value,
+            order.OrderDetails.First().UnitPrice.Amount,
+            order.OrderDetails.First().Quantity,
+            order.OrderDetails.First().Total.Amount,
+            order.OrderDetails.First().PlacedAt,
+            order.OrderDetails.First().DueDate
         );
     }
 }
