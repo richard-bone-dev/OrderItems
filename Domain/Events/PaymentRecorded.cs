@@ -5,9 +5,9 @@ namespace Api.Domain.Events;
 
 public sealed class PaymentRecorded : DomainEvent
 {
-    public Customer User { get; }
+    public Customer Customer { get; }
     public Payment Payment { get; }
-    public PaymentRecorded(Customer user, Payment payment) => (User, Payment) = (user, payment);
+    public PaymentRecorded(Customer user, Payment payment) => (Customer, Payment) = (user, payment);
 }
 
 

@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Api.Application.Batches.Queries.Handlers;
 
 public class GetCurrentBatchHandler
-    : IQueryHandler<GetCurrentBatchQuery, BatchDto?>
+    : IQueryHandlerAsync<GetCurrentBatchQuery, BatchDto?>
 {
     private readonly ApplicationDbContext _db;
 
     public GetCurrentBatchHandler(ApplicationDbContext db) => _db = db;
 
-    public async Task<BatchDto?> Handle(GetCurrentBatchQuery query, CancellationToken ct = default)
+    public async Task<BatchDto?> HandleAsync(GetCurrentBatchQuery query, CancellationToken ct = default)
     {
         var batch = await _db.Batches
             .Where(b => b.IsActive)

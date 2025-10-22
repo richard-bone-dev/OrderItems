@@ -5,24 +5,24 @@ using Api.Domain.ValueObjects;
 namespace Api.Application.Orders.Commands.Handlers;
 
 public class PlaceOrderWithDeferredPaymentHandler
-    : ICommandHandler<PlaceOrderWithDeferredPaymentCommand, OrderDto>
+    : ICommandHandlerAsync<PlaceOrderWithDeferredPaymentCommand, OrderDto>
 {
-    private readonly IUserRepository _userRepo;
+    private readonly ICustomerRepository _customerRepo;
     private readonly IBatchRepository _batchRepo;
 
-    public PlaceOrderWithDeferredPaymentHandler(IUserRepository userRepo, IBatchRepository batchRepo)
+    public PlaceOrderWithDeferredPaymentHandler(ICustomerRepository customerRepo, IBatchRepository batchRepo)
     {
-        _userRepo = userRepo;
+        _customerRepo = customerRepo;
         _batchRepo = batchRepo;
     }
 
-    public async Task<OrderDto> Handle(PlaceOrderWithDeferredPaymentCommand cmd, CancellationToken ct = default)
+    public async Task<OrderDto> HandleAsync(PlaceOrderWithDeferredPaymentCommand cmd, CancellationToken ct = default)
     {
-        var userId = new CustomerId(cmd.UserId);
+        var customerId = new CustomerId(cmd.CustomerId);
         var batchId = new BatchId(cmd.BatchId);
         var productTypeId = new ProductTypeId(cmd.ProductTypeId);
 
-        var user = await _userRepo.GetByIdAsync(userId, ct)
+        var customer = await _customerRepo.GetByIdAsync(customerId, ct)
                    ?? throw new KeyNotFoundException("User not found.");
         var batch = await _batchRepo.GetByIdAsync(batchId, ct)
                     ?? throw new KeyNotFoundException("Batch not found.");
@@ -30,7 +30,7 @@ public class PlaceOrderWithDeferredPaymentHandler
         var total = new Money(cmd.Amount);
 
         // Add order but no payment yet
-        var order = batch.AddOrder(userId, productTypeId, total, DateTime.UtcNow, cmd.DueDate);
+        var order = batch.AddOrder(customerId, productTypeId, total, DateTime.UtcNow, cmd.DueDate);
 
         await _batchRepo.SaveChangesAsync(ct);
 

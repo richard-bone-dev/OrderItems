@@ -6,24 +6,24 @@ using Api.Domain.ValueObjects;
 namespace Api.Application.Orders.Commands.Handlers;
 
 public class PlaceOrderWithImmediatePaymentHandler
-    : ICommandHandler<PlaceOrderWithImmediatePaymentCommand, OrderDto>
+    : ICommandHandlerAsync<PlaceOrderWithImmediatePaymentCommand, OrderDto>
 {
-    private readonly IUserRepository _userRepo;
+    private readonly ICustomerRepository _customerRepo;
     private readonly IBatchRepository _batchRepo;
 
-    public PlaceOrderWithImmediatePaymentHandler(IUserRepository userRepo, IBatchRepository batchRepo)
+    public PlaceOrderWithImmediatePaymentHandler(ICustomerRepository customerRepo, IBatchRepository batchRepo)
     {
-        _userRepo = userRepo;
+        _customerRepo = customerRepo;
         _batchRepo = batchRepo;
     }
 
-    public async Task<OrderDto> Handle(PlaceOrderWithImmediatePaymentCommand cmd, CancellationToken ct = default)
+    public async Task<OrderDto> HandleAsync(PlaceOrderWithImmediatePaymentCommand cmd, CancellationToken ct = default)
     {
-        var userId = new CustomerId(cmd.UserId);
+        var customerId = new CustomerId(cmd.CustomerId);
         var batchId = new BatchId(cmd.BatchId);
         var productTypeId = new ProductTypeId(cmd.ProductTypeId);
 
-        var user = await _userRepo.GetByIdAsync(userId, ct)
+        var customer = await _customerRepo.GetByIdAsync(customerId, ct)
                    ?? throw new KeyNotFoundException("User not found.");
         var batch = await _batchRepo.GetByIdAsync(batchId, ct)
                     ?? throw new KeyNotFoundException("Batch not found.");
@@ -31,14 +31,14 @@ public class PlaceOrderWithImmediatePaymentHandler
         var total = new Money(cmd.Amount);
 
         // Add order and immediate payment
-        var order = batch.AddOrder(userId, productTypeId, total, DateTime.UtcNow);
-        var payment = Payment.Create(userId, total.Amount.Value, DateTime.UtcNow);
+        var order = batch.AddOrder(customerId, productTypeId, total, DateTime.UtcNow);
+        var payment = Payment.Create(customerId, total.Amount.Value, DateTime.UtcNow);
 
-        user.AddOrder(order); 
-        user.AddPayment(payment);
+        customer.AddOrder(order); 
+        customer.AddPayment(payment);
 
         await _batchRepo.SaveChangesAsync(ct);
-        await _userRepo.SaveChangesAsync(ct);
+        await _customerRepo.SaveChangesAsync(ct);
 
         return OrderMapper.ToDto(order, batch.Number);
     }

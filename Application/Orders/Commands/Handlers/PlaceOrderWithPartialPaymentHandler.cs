@@ -8,37 +8,37 @@ using Api.Domain.ValueObjects;
 namespace Api.Application.Orders.Commands.Handlers;
 
 public class PlaceOrderWithPartialPaymentHandler
-    : ICommandHandler<PlaceOrderWithPartialPaymentCommand, OrderDto>
+    : ICommandHandlerAsync<PlaceOrderWithPartialPaymentCommand, OrderDto>
 {
-    private readonly IUserRepository _userRepo;
+    private readonly ICustomerRepository _customerRepo;
     private readonly IBatchRepository _batchRepo;
 
-    public PlaceOrderWithPartialPaymentHandler(IUserRepository userRepo, IBatchRepository batchRepo)
+    public PlaceOrderWithPartialPaymentHandler(ICustomerRepository customerRepo, IBatchRepository batchRepo)
     {
-        _userRepo = userRepo;
+        _customerRepo = customerRepo;
         _batchRepo = batchRepo;
     }
 
-    public async Task<OrderDto> Handle(PlaceOrderWithPartialPaymentCommand cmd, CancellationToken ct = default)
+    public async Task<OrderDto> HandleAsync(PlaceOrderWithPartialPaymentCommand cmd, CancellationToken ct = default)
     {
-        var userId = new CustomerId(cmd.UserId);
+        var customerId = new CustomerId(cmd.CustomerId);
         var batchId = new BatchId(cmd.BatchId);
         var productTypeId = new ProductTypeId(cmd.ProductTypeId);
 
-        var user = await _userRepo.GetByIdAsync(userId, ct)
+        var customer = await _customerRepo.GetByIdAsync(customerId, ct)
                    ?? throw new KeyNotFoundException("User not found.");
         var batch = await _batchRepo.GetByIdAsync(batchId, ct)
                     ?? throw new KeyNotFoundException("Batch not found.");
 
         var total = new Money(cmd.PaidAmount + cmd.RemainingAmount);
 
-        var order = batch.AddOrder(userId, productTypeId, total, DateTime.UtcNow, cmd.DueDate);
+        var order = batch.AddOrder(customerId, productTypeId, total, DateTime.UtcNow, cmd.DueDate);
 
-        var payment = Payment.Create(userId, cmd.PaidAmount, DateTime.UtcNow);
-        user.AddPayment(payment);
+        var payment = Payment.Create(customerId, cmd.PaidAmount, DateTime.UtcNow);
+        customer.AddPayment(payment);
 
         await _batchRepo.SaveChangesAsync(ct);
-        await _userRepo.SaveChangesAsync(ct);
+        await _customerRepo.SaveChangesAsync(ct);
 
         return OrderMapper.ToDto(order, batch.Number);
     }
@@ -57,7 +57,7 @@ public static class PaymentMapper
 {
     public static PaymentDto ToDto(Payment payment) => new(
         payment.Id.Value,
-        payment.UserId.Value,
+        payment.CustomerId.Value,
         payment.PaidAmount.Amount,
         payment.PaymentDate
     );
@@ -67,7 +67,7 @@ public static class OrderMapper
 {
     public static OrderDto ToDto(Order order, BatchNumber batchNumber) => new(
         order.Id.Value,
-        order.UserId.Value,
+        order.CustomerId.Value,
         order.BatchId.Value,
         batchNumber.Value,
         order.OrderDetails.First().ProductTypeId.Value,
@@ -86,7 +86,7 @@ public static class OrderMapper
 
         return new OrderDto(
             order.Id.Value,
-            order.UserId.Value,
+            order.CustomerId.Value,
             order.BatchId.Value,
             batchNumber,
             order.OrderDetails.First().ProductTypeId.Value,

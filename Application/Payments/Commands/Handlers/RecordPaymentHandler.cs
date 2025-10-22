@@ -4,22 +4,22 @@ using Api.Application.Payments.Dtos;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 
-public class RecordPaymentHandler : ICommandHandler<RecordPaymentCommand, PaymentDto>
+public class RecordPaymentHandler : ICommandHandlerAsync<RecordPaymentCommand, PaymentDto>
 {
-    private readonly IUserRepository _repo;
+    private readonly ICustomerRepository _repo;
 
-    public RecordPaymentHandler(IUserRepository repo) => _repo = repo;
+    public RecordPaymentHandler(ICustomerRepository repo) => _repo = repo;
 
-    public async Task<PaymentDto> Handle(RecordPaymentCommand cmd, CancellationToken ct = default)
+    public async Task<PaymentDto> HandleAsync(RecordPaymentCommand cmd, CancellationToken ct = default)
     {
-        var user = await _repo.GetByIdAsync(new CustomerId(cmd.UserId), ct)
+        var customer = await _repo.GetByIdAsync(new CustomerId(cmd.CustomerId), ct)
                    ?? throw new KeyNotFoundException("User not found.");
 
-        var payment = Payment.Create(cmd.UserId, cmd.Amount, cmd.PaymentDate);
-        user.AddPayment(payment);
+        var payment = Payment.Create(cmd.CustomerId, cmd.Amount, cmd.PaymentDate);
+        customer.AddPayment(payment);
 
         await _repo.SaveChangesAsync(ct);
 
-        return new PaymentDto(payment.Id.Value, user.Id.Value, cmd.Amount, payment.PaymentDate);
+        return new PaymentDto(payment.Id.Value, customer.Id.Value, cmd.Amount, payment.PaymentDate);
     }
 }

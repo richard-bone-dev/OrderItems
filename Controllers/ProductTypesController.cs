@@ -24,10 +24,10 @@ public class ProductTypesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ProductTypeDto?>> GetAll(CancellationToken ct)
-        => Ok(await _getProductTypes.Handle(new GetProductTypeQuery(), ct));
+    public async Task<ActionResult<ProductTypeDto?>> GetAllAsync(CancellationToken ct)
+        => Ok(await _getProductTypes.HandleAsync(new GetProductTypeQuery(), ct));
 
     [HttpPost]
-    public async Task<ActionResult<ProductTypeDto>> Create([FromBody] CreateProductTypeCommand cmd, CancellationToken ct)
-        => Ok(await _createProductType.Handle(cmd, ct));
+    public async Task<ActionResult<ProductTypeDto>> CreateAsync([FromBody] CreateProductTypeCommand cmd, CancellationToken ct)
+        => Ok(await _createProductType.HandleAsync(cmd, ct));
 }

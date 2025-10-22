@@ -5,34 +5,36 @@ namespace Api.Domain.Entities;
 
 public class Order : Entity<OrderId>
 {
-    public CustomerId UserId { get; private set; }
+    public CustomerId CustomerId { get; private set; }
     public BatchId BatchId { get; private set; }
-    public List<OrderDetail> OrderDetails { get; private set; } = new();
+
+    public List<OrderDetail> _orderDetails;
+    public IReadOnlyCollection<OrderDetail> OrderDetails => _orderDetails;
 
     private Order() { }
 
-    private Order(OrderId id, CustomerId userId, BatchId batchId, List<OrderDetail> orderDetails)
+    private Order(OrderId id, CustomerId customerId, BatchId batchId, List<OrderDetail> orderDetails)
     {
         Id = id;
-        UserId = userId;
+        CustomerId = customerId;
         BatchId = batchId;
-        OrderDetails = orderDetails;
+        _orderDetails = orderDetails;
     }
 
-    public static Order Create(CustomerId userId, BatchId batchId, List<OrderDetail> orderDetail)
+    public static Order Create(CustomerId customerId, BatchId batchId, List<OrderDetail> orderDetail)
     {
-        return new Order(OrderId.New(), userId, batchId, orderDetail);
+        return new Order(OrderId.New(), customerId, batchId, orderDetail);
     }
 
     public void AddOrderDetail(OrderDetail detail)
     {
         if (detail == null)
             throw new ArgumentNullException(nameof(detail));
-        OrderDetails.Add(detail);
+        _orderDetails.Add(detail);
     }
 
     public void RemoveOrderDetail(OrderDetail detail)
     {
-        OrderDetails.Remove(detail);
+        _orderDetails.Remove(detail);
     }
 }

@@ -9,7 +9,7 @@ public record PlaceOrderResponse(OrderId OrderId, DateTime? OrderDate);
 public record MakePaymentRequest(decimal Amount, DateTime? PaymentDate = null);
 public record MakePaymentResponse(Guid PaymentId, decimal Amount, DateTime PaymentDate);
 
-//public class CreateUserRequest { public string Name { get; set; } = string.Empty; }
+public class CreateCustomerRequest { public string Name { get; set; } = string.Empty; }
 
 public record ProductTypeDto(Guid Id, decimal? UnitPrice);
 

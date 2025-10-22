@@ -23,10 +23,10 @@ public class BatchesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<BatchDto>> Create([FromBody] CreateBatchCommand cmd, CancellationToken ct)
-        => Ok(await _createBatch.Handle(cmd, ct));
+    public async Task<ActionResult<BatchDto>> CreateAsync([FromBody] CreateBatchCommand cmd, CancellationToken ct)
+        => Ok(await _createBatch.HandleAsync(cmd, ct));
 
     [HttpGet("current")]
-    public async Task<ActionResult<BatchDto?>> GetCurrent(CancellationToken ct)
-        => Ok(await _getCurrent.Handle(new GetCurrentBatchQuery(), ct));
+    public async Task<ActionResult<BatchDto?>> GetCurrentAsync(CancellationToken ct)
+        => Ok(await _getCurrent.HandleAsync(new GetCurrentBatchQuery(), ct));
 }
