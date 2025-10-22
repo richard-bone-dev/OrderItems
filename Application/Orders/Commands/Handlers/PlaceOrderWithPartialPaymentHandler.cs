@@ -1,7 +1,5 @@
 ﻿using Api.Application.Abstractions;
 using Api.Application.Orders.Dtos;
-using Api.Application.Payments.Dtos;
-using Api.Application.ProductTypes.Dtos;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 
@@ -42,59 +40,3 @@ public class PlaceOrderWithPartialPaymentHandler
 
         return OrderMapper.ToDto(order, batch.Number);
     }
-}
-
-public static class ProductTypeMapper
-{
-    public static ProductTypeDto ToDto(ProductType productType) => new(
-        productType.Id.Value,
-        productType.Name,
-        productType.UnitPrice.Amount.HasValue ? productType.UnitPrice.Amount.Value : null
-    );
-}
-
-public static class PaymentMapper
-{
-    public static PaymentDto ToDto(Payment payment) => new(
-        payment.Id.Value,
-        payment.CustomerId.Value,
-        payment.PaidAmount.Amount,
-        payment.PaymentDate
-    );
-}
-
-public static class OrderMapper
-{
-    public static OrderDto ToDto(Order order, BatchNumber batchNumber) => new(
-        order.Id.Value,
-        order.CustomerId.Value,
-        order.BatchId.Value,
-        batchNumber.Value,
-        order.OrderDetails.First().ProductTypeId.Value,
-        order.OrderDetails.First().UnitPrice.Amount,
-        order.OrderDetails.First().Quantity,
-        order.OrderDetails.First().Total.Amount,
-        order.OrderDetails.First().PlacedAt,
-        order.OrderDetails.First().DueDate
-    );
-
-    public static OrderDto ToDto(this Order order, Dictionary<BatchId, BatchNumber> batchMap)
-    {
-        var batchNumber = batchMap.TryGetValue(order.BatchId, out var bn)
-            ? bn.Value
-            : 0;
-
-        return new OrderDto(
-            order.Id.Value,
-            order.CustomerId.Value,
-            order.BatchId.Value,
-            batchNumber,
-            order.OrderDetails.First().ProductTypeId.Value,
-            order.OrderDetails.First().UnitPrice.Amount,
-            order.OrderDetails.First().Quantity,
-            order.OrderDetails.First().Total.Amount,
-            order.OrderDetails.First().PlacedAt,
-            order.OrderDetails.First().DueDate
-        );
-    }
-}
