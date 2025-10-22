@@ -1,6 +1,6 @@
 ﻿namespace Api.Application.Abstractions;
 
-public interface IQueryHandler<TQuery, TResult>
+public interface IQueryHandlerAsync<TQuery, TResult>
 {
-    Task<TResult> Handle(TQuery query, CancellationToken ct = default);
+    Task<TResult> HandleAsync(TQuery query, CancellationToken ct = default);
 }

@@ -1,6 +1,6 @@
 ﻿namespace Api.Application.Payments.Commands;
 
 public record RecordPaymentCommand(
-    Guid UserId,
+    Guid CustomerId,
     decimal Amount,
     DateTime? PaymentDate = null);

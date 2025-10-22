@@ -12,10 +12,10 @@ public class OrderRepository : IOrderRepository
 
     public OrderRepository(ApplicationDbContext db) => _db = db;
 
-    public async Task<IReadOnlyCollection<Order>> GetByUserIdAsync(CustomerId userId, CancellationToken ct = default)
+    public async Task<IReadOnlyCollection<Order>> GetByCustomerIdAsync(CustomerId customerId, CancellationToken ct = default)
     {
         return await _db.Orders
-            .Where(o => o.UserId == userId)
+            .Where(o => o.CustomerId == customerId)
             .AsNoTracking()
             .ToListAsync(ct);
     }

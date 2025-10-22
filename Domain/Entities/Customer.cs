@@ -5,7 +5,7 @@ using Api.Domain.ValueObjects;
 
 public class Customer : Entity<CustomerId>
 {
-    public UserName Name { get; private set; }
+    public CustomerName Name { get; private set; }
     public DateTime RegisteredAt { get; private set; }
 
     private readonly List<Payment> _payments = new();
@@ -24,20 +24,20 @@ public class Customer : Entity<CustomerId>
 
     private Customer() { }
 
-    private Customer(CustomerId id, UserName name, DateTime registeredAt)
+    private Customer(CustomerId id, CustomerName name, DateTime registeredAt)
     {
         Id = id;
         Name = name ?? throw new ArgumentNullException(nameof(name));
         RegisteredAt = registeredAt;
     }
 
-    public static Customer Register(UserName name)
+    public static Customer Register(CustomerName name)
         => new(CustomerId.New(), name, DateTime.UtcNow);
 
     public void AddPayment(Payment payment)
     {
-        if (payment.UserId.Value != Id.Value)
-            throw new InvalidOperationException("Payment user mismatch.");
+        if (payment.CustomerId.Value != Id.Value)
+            throw new InvalidOperationException("Payment customer mismatch.");
 
         _payments.Add(payment);
         DomainEvents.Raise(new PaymentRecorded(this, payment));
@@ -45,8 +45,8 @@ public class Customer : Entity<CustomerId>
 
     public void AddOrder(Order order)
     {
-        if (order.UserId.Value != Id.Value)
-            throw new InvalidOperationException("Order user mismatch.");
+        if (order.CustomerId.Value != Id.Value)
+            throw new InvalidOperationException("Order customer mismatch.");
 
         _orders.Add(order);
     }

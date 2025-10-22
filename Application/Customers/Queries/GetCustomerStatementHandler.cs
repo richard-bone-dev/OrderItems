@@ -6,31 +6,31 @@ using Api.Domain.ValueObjects;
 
 namespace Api.Application.Customers.Queries.Handlers;
 
-public class GetCustomerStatementHandler : IQueryHandler<GetCustomerStatementQuery, CustomerStatementResponse>
+public class GetCustomerStatementHandler : IQueryHandlerAsync<GetCustomerStatementQuery, CustomerStatementResponse>
 {
-    private readonly IUserRepository _userRepository;
+    private readonly ICustomerRepository _customerRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IBatchRepository _batchRepository;
 
 
-    public GetCustomerStatementHandler(IUserRepository userRepository, IOrderRepository orderRepository, IBatchRepository batchRepository)
+    public GetCustomerStatementHandler(ICustomerRepository customerRepository, IOrderRepository orderRepository, IBatchRepository batchRepository)
     {
-        _userRepository = userRepository;
+        _customerRepository = customerRepository;
         _orderRepository = orderRepository;
         _batchRepository = batchRepository;
     }
 
 
-    public async Task<CustomerStatementResponse> Handle(GetCustomerStatementQuery query, CancellationToken ct)
+    public async Task<CustomerStatementResponse> HandleAsync(GetCustomerStatementQuery query, CancellationToken ct)
     {
-        var userId = new CustomerId(query.UserId);
+        var userId = new CustomerId(query.CustomerId);
 
 
-        var user = await _userRepository.GetByIdAsync(userId, ct)
+        var user = await _customerRepository.GetByIdAsync(userId, ct)
             ?? throw new KeyNotFoundException("User not found.");
 
 
-        var orders = await _orderRepository.GetByUserIdAsync(userId, ct);
+        var orders = await _orderRepository.GetByCustomerIdAsync(userId, ct);
 
 
         var batchIds = orders.Select(o => o.BatchId).Distinct().ToList();

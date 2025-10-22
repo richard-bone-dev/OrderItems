@@ -27,45 +27,45 @@ public class CustomersController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new user
+    /// Create a new customer
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<CustomerDto>> Create([FromBody] CreateCustomerCommand cmd, CancellationToken ct)
+    public async Task<ActionResult<CustomerDto>> CreateAsync([FromBody] CreateCustomerCommand cmd, CancellationToken ct)
     {
-        var result = await _createCustomer.Handle(cmd, ct);
-        return CreatedAtAction(nameof(GetById), new { userId = result.Id }, result);
+        var result = await _createCustomer.HandleAsync(cmd, ct);
+        return CreatedAtAction(nameof(GetByIdAsync), new { customerId = result.Id }, result);
     }
 
     /// <summary>
-    /// List all users
+    /// List all customers
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomersAsync(CancellationToken ct)
     {
-        var users = await _getCustomers.Handle(new GetCustomersQuery(), ct);
-        return Ok(users);
+        var customers = await _getCustomers.HandleAsync(new GetCustomersQuery(), ct);
+        return Ok(customers);
     }
 
     /// <summary>
-    /// Get user by Id
+    /// Get customer by Id
     /// </summary>
-    [HttpGet("{userId:guid}")]
-    public async Task<ActionResult<CustomerDto>> GetById(Guid userId, CancellationToken ct)
+    [HttpGet("{customerId:guid}")]
+    public async Task<ActionResult<CustomerDto>> GetByIdAsync(Guid customerId, CancellationToken ct)
     {
-        var users = await _getCustomers.Handle(new GetCustomersQuery(), ct);
-        var user = users.FirstOrDefault(u => u.Id == userId);
+        var customers = await _getCustomers.HandleAsync(new GetCustomersQuery(), ct);
+        var customer = customers.FirstOrDefault(u => u.Id == customerId);
 
-        if (user is null) return NotFound();
-        return Ok(user);
+        if (customer is null) return NotFound();
+        return Ok(customer);
     }
 
     /// <summary>
-    /// Get user financial statement
+    /// Get customer financial statement
     /// </summary>
-    [HttpGet("{userId:guid}/statement")]
-    public async Task<ActionResult<CustomerStatementResponse>> GetStatement(Guid userId, CancellationToken ct)
+    [HttpGet("{customerId:guid}/statement")]
+    public async Task<ActionResult<CustomerStatementResponse>> GetStatementAsync(Guid customerId, CancellationToken ct)
     {
-        var response = await _getStatement.Handle(new GetCustomerStatementQuery(new CustomerId(userId)), ct);
+        var response = await _getStatement.HandleAsync(new GetCustomerStatementQuery(new CustomerId(customerId)), ct);
         return Ok(response);
     }
 }

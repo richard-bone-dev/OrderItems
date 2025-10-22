@@ -11,35 +11,35 @@ namespace Api.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly RecordPaymentHandler _recordHandler;
-    private readonly GetUserPaymentsHandler _getUserPayments;
+    private readonly GetCustomerPaymentsHandler _getCustomerPayments;
     private readonly GetPaymentDetailHandler _getDetail;
     private readonly GetPaymentSnapshotHandler _getSnapshot;
 
     public PaymentsController(
         RecordPaymentHandler recordHandler,
-        GetUserPaymentsHandler getUserPayments,
+        GetCustomerPaymentsHandler getCustomerPayments,
         GetPaymentDetailHandler getDetail,
         GetPaymentSnapshotHandler getSnapshot)
     {
         _recordHandler = recordHandler;
-        _getUserPayments = getUserPayments;
+        _getCustomerPayments = getCustomerPayments;
         _getDetail = getDetail;
         _getSnapshot = getSnapshot;
     }
 
     [HttpPost]
-    public async Task<ActionResult<PaymentDto>> Record([FromBody] RecordPaymentCommand cmd, CancellationToken ct)
-        => Ok(await _recordHandler.Handle(cmd, ct));
+    public async Task<ActionResult<PaymentDto>> RecordAsync([FromBody] RecordPaymentCommand cmd, CancellationToken ct)
+        => Ok(await _recordHandler.HandleAsync(cmd, ct));
 
-    [HttpGet("user/{userId:guid}")]
-    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetUserPayments(Guid userId, CancellationToken ct)
-        => Ok(await _getUserPayments.Handle(new GetUserPaymentsQuery(userId), ct));
+    [HttpGet("customer/{customerId:guid}")]
+    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetCustomerPaymentsAsync(Guid customerId, CancellationToken ct)
+        => Ok(await _getCustomerPayments.HandleAsync(new GetCustomerPaymentsQuery(customerId), ct));
 
     [HttpGet("{paymentId:guid}")]
-    public async Task<ActionResult<PaymentDetailDto>> GetDetail(Guid paymentId, CancellationToken ct)
-        => Ok(await _getDetail.Handle(new GetPaymentDetailQuery(paymentId), ct));
+    public async Task<ActionResult<PaymentDetailDto>> GetDetailAsync(Guid paymentId, CancellationToken ct)
+        => Ok(await _getDetail.HandleAsync(new GetPaymentDetailQuery(paymentId), ct));
 
     [HttpGet("{paymentId:guid}/snapshot")]
-    public async Task<ActionResult<PaymentSnapshotDto>> GetSnapshot(Guid paymentId, CancellationToken ct)
-        => Ok(await _getSnapshot.Handle(new GetPaymentSnapshotQuery(paymentId), ct));
+    public async Task<ActionResult<PaymentSnapshotDto>> GetSnapshotAsync(Guid paymentId, CancellationToken ct)
+        => Ok(await _getSnapshot.HandleAsync(new GetPaymentSnapshotQuery(paymentId), ct));
 }

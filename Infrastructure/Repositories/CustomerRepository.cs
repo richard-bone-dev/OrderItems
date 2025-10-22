@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class CustomerRepository : ICustomerRepository
 {
     private readonly ApplicationDbContext _db;
-    public UserRepository(ApplicationDbContext db) => _db = db;
+    public CustomerRepository(ApplicationDbContext db) => _db = db;
 
-    public async Task AddAsync(Customer user, CancellationToken ct = default)
-        => await _db.Customers.AddAsync(user, ct);
+    public async Task AddAsync(Customer customer, CancellationToken ct = default)
+        => await _db.Customers.AddAsync(customer, ct);
 
     public async Task<Customer?> GetByIdAsync(CustomerId id, CancellationToken ct = default)
         => await _db.Customers.Include(u => u.Orders).Include(u => u.Payments).FirstOrDefaultAsync(u => u.Id == id, ct);

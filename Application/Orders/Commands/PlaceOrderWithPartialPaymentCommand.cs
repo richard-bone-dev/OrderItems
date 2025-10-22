@@ -1,7 +1,7 @@
 ﻿namespace Api.Application.Orders.Commands;
 
 public record PlaceOrderWithPartialPaymentCommand(
-    Guid UserId,
+    Guid CustomerId,
     Guid BatchId,
     Guid ProductTypeId,
     decimal PaidAmount,

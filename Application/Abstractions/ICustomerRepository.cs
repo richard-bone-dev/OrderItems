@@ -2,7 +2,7 @@
 
 namespace Api.Application.Abstractions;
 
-public interface IUserRepository
+public interface ICustomerRepository
 {
     Task<Customer?> GetByIdAsync(CustomerId id, CancellationToken ct = default);
     Task AddAsync(Customer user, CancellationToken ct = default);

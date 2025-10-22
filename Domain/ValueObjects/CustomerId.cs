@@ -6,7 +6,7 @@ namespace Api.Domain.ValueObjects;
 [TypeConverter(typeof(StronglyTypedIdTypeConverter<CustomerId>))]
 public sealed class CustomerId : StronglyTypedId<CustomerId>
 {
-    //public UserId() : base() { }
+    //public CustomerId() : base() { }
     public CustomerId(Guid value) : base(value) { }
     public static CustomerId New() => new(Guid.NewGuid());
 }

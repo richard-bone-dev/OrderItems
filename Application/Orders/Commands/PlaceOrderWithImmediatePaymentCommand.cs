@@ -1,7 +1,7 @@
 ﻿namespace Api.Application.Orders.Commands;
 
 public record PlaceOrderWithImmediatePaymentCommand(
-    Guid UserId,
+    Guid CustomerId,
     Guid BatchId,
     Guid ProductTypeId,
     decimal Amount);

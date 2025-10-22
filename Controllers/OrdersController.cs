@@ -24,14 +24,14 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost("immediate")]
-    public async Task<ActionResult<OrderDto>> PlaceImmediate([FromBody] PlaceOrderWithImmediatePaymentCommand cmd, CancellationToken ct)
-        => Ok(await _immediateHandler.Handle(cmd, ct));
+    public async Task<ActionResult<OrderDto>> PlaceImmediateAsync([FromBody] PlaceOrderWithImmediatePaymentCommand cmd, CancellationToken ct)
+        => Ok(await _immediateHandler.HandleAsync(cmd, ct));
 
     [HttpPost("deferred")]
-    public async Task<ActionResult<OrderDto>> PlaceDeferred([FromBody] PlaceOrderWithDeferredPaymentCommand cmd, CancellationToken ct)
-        => Ok(await _deferredHandler.Handle(cmd, ct));
+    public async Task<ActionResult<OrderDto>> PlaceDeferredAsync([FromBody] PlaceOrderWithDeferredPaymentCommand cmd, CancellationToken ct)
+        => Ok(await _deferredHandler.HandleAsync(cmd, ct));
 
     [HttpPost("partial")]
-    public async Task<ActionResult<OrderDto>> PlacePartial([FromBody] PlaceOrderWithPartialPaymentCommand cmd, CancellationToken ct)
-        => Ok(await _partialHandler.Handle(cmd, ct));
+    public async Task<ActionResult<OrderDto>> PlacePartialAsync([FromBody] PlaceOrderWithPartialPaymentCommand cmd, CancellationToken ct)
+        => Ok(await _partialHandler.HandleAsync(cmd, ct));
 }

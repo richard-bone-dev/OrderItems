@@ -4,8 +4,8 @@ using Api.Application.Payments.Dtos;
 namespace Api.Application.Customers.Dtos;
 
 public record CustomerStatementResponse(
-    Guid UserId,
-    string UserName,
+    Guid CustomerId,
+    string CustomerName,
     decimal? TotalCharged,
     decimal? TotalPaid,
     decimal? Balance,

@@ -11,10 +11,10 @@ public static class DependencyInjection
 
         services.Scan(scan => scan
             .FromAssemblies(assembly)
-            .AddClasses(c => c.AssignableTo(typeof(ICommandHandler<,>)))
+            .AddClasses(c => c.AssignableTo(typeof(ICommandHandlerAsync<,>)))
                 .AsSelfWithInterfaces()
                 .WithScopedLifetime()
-            .AddClasses(c => c.AssignableTo(typeof(IQueryHandler<,>)))
+            .AddClasses(c => c.AssignableTo(typeof(IQueryHandlerAsync<,>)))
                 .AsSelfWithInterfaces()
                 .WithScopedLifetime()
         );

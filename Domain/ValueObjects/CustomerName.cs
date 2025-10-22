@@ -2,19 +2,19 @@
 
 namespace Api.Domain.ValueObjects;
 
-public sealed class UserName : ValueObject
+public sealed class CustomerName : ValueObject
 {
     public string Value { get; }
 
-    private UserName() { }
+    private CustomerName() { }
 
-    public UserName(string value)
+    public CustomerName(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("User name cannot be empty.");
+            throw new ArgumentException("Customer name cannot be empty.");
 
         if (value.Length > 100)
-            throw new ArgumentException("User name too long.");
+            throw new ArgumentException("Customer name too long.");
 
         Value = value;
     }

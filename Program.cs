@@ -43,20 +43,20 @@ public class Program
             //    options.UseInMemoryDatabase("Placeholder"));
         }
 
-        var applicationAssembly = typeof(ICommandHandler<,>).Assembly;
+        var applicationAssembly = typeof(ICommandHandlerAsync<,>).Assembly;
 
         builder.Services.Scan(scan => scan
             .FromAssemblies(applicationAssembly)
-            .AddClasses(c => c.AssignableTo(typeof(ICommandHandler<,>)))
+            .AddClasses(c => c.AssignableTo(typeof(ICommandHandlerAsync<,>)))
                 .AsSelfWithInterfaces()
                 .WithScopedLifetime()
-            .AddClasses(c => c.AssignableTo(typeof(IQueryHandler<,>)))
+            .AddClasses(c => c.AssignableTo(typeof(IQueryHandlerAsync<,>)))
                 .AsSelfWithInterfaces()
                 .WithScopedLifetime()
         );
 
         builder.Services.Scan(scan => scan
-            .FromAssemblies(typeof(IUserRepository).Assembly, typeof(ApplicationDbContext).Assembly)
+            .FromAssemblies(typeof(ICustomerRepository).Assembly, typeof(ApplicationDbContext).Assembly)
                 .AddClasses(c => c.InNamespaces("Api.Infrastructure.Repositories"))
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
@@ -186,10 +186,10 @@ public static class DataSeeder
         }
 
         if (!context.Customers.Any(u => u.Name.Value == "None"))
-            context.Customers.Add(Customer.Register(new UserName("None")));
+            context.Customers.Add(Customer.Register(new CustomerName("None")));
 
         if (!context.Customers.Any(u => u.Name.Value == "Admin"))
-            context.Customers.Add(Customer.Register(new UserName("Admin")));
+            context.Customers.Add(Customer.Register(new CustomerName("Admin")));
 
         if (!context.Customers.Any())
         {
@@ -247,7 +247,7 @@ public static class DataSeeder
 
     private static Customer CreateCustomer(string name, decimal[] values, BatchId batchId)
     {
-        var customer = Customer.Register(new UserName(name));
+        var customer = Customer.Register(new CustomerName(name));
 
         var orderDetails = values.Select(v => 
             new OrderDetail(
@@ -279,7 +279,7 @@ public static class DataSeeder
         //var pt100 = ProductType.Create(100m);
         //context.ProductTypes.AddRange(pt50, pt100);
 
-        var testUser = Customer.Register(new UserName("Test User"));
+        var testUser = Customer.Register(new CustomerName("Test User"));
         context.Customers.Add(testUser);
 
         await context.SaveChangesAsync();
@@ -350,19 +350,19 @@ public static class DataSeeder
 
 //            foreach (var (code, balance) in sorted)
 //            {
-//                var user = User.Register(code);
+//                var customer = User.Register(code);
 
 //                if (balance > 0)
 //                {
-//                    user.PlaceOrder(
-//                        new UserId(user.Id),
+//                    customer.PlaceOrder(
+//                        new CustomerId(customer.Id),
 //                        new BatchNumber(1),
 //                        productTypeId,
 //                        new OrderDetail(new Money(balance * 10), null, null)
 //                    );
 //                }
 
-//                context.Users.Add(user);
+//                context.Users.Add(customer);
 //            }
 //        }
 

@@ -1,6 +1,6 @@
 ﻿namespace Api.Application.Abstractions;
 
-public interface ICommandHandler<TCommand, TResult>
+public interface ICommandHandlerAsync<TCommand, TResult>
 {
-    Task<TResult> Handle(TCommand command, CancellationToken ct = default);
+    Task<TResult> HandleAsync(TCommand command, CancellationToken ct = default);
 }

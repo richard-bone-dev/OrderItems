@@ -21,7 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         base.OnModelCreating(builder);
 
-        var userIdConverter = new ValueConverter<CustomerId, Guid>(id => id.Value, value => new CustomerId(value));
+        var customerIdConverter = new ValueConverter<CustomerId, Guid>(id => id.Value, value => new CustomerId(value));
         var orderIdConverter = new ValueConverter<OrderId, Guid>(id => id.Value, value => new OrderId(value));
         var paymentIdConverter = new ValueConverter<PaymentId, Guid>(id => id.Value, value => new PaymentId(value));
         var productTypeIdConverter = new ValueConverter<ProductTypeId, Guid>(id => id.Value, value => new ProductTypeId(value));
@@ -38,7 +38,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         builder.Entity<Customer>(b =>
         {
             b.HasKey(u => u.Id);
-            b.Property(u => u.Id).HasConversion(userIdConverter);
+            b.Property(u => u.Id).HasConversion(customerIdConverter);
             b.Property(u => u.RegisteredAt).IsRequired();
 
             b.OwnsOne(u => u.Name, name =>
@@ -51,7 +51,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 
             b.HasMany(u => u.Payments)
                 .WithOne()
-                .HasForeignKey(p => p.UserId);
+                .HasForeignKey(p => p.CustomerId);
         });
 
         builder.Entity<Batch>(b =>
@@ -88,7 +88,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.HasKey(o => o.Id);
 
             b.Property(o => o.Id).HasConversion(orderIdConverter);
-            b.Property(o => o.UserId).HasConversion(userIdConverter);
+            b.Property(o => o.CustomerId).HasConversion(customerIdConverter);
             b.Property(o => o.BatchId).HasConversion(batchIdConverter);
 
             b.OwnsMany(o => o.OrderDetails, detail =>
@@ -121,7 +121,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         {
             b.HasKey(p => p.Id);
             b.Property(p => p.Id).HasConversion(paymentIdConverter);
-            b.Property(p => p.UserId).HasConversion(userIdConverter).IsRequired();
+            b.Property(p => p.CustomerId).HasConversion(customerIdConverter).IsRequired();
 
             b.OwnsOne(p => p.PaidAmount, money =>
             {

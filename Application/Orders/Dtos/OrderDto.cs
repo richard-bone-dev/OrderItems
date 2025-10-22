@@ -2,7 +2,7 @@
 
 public record OrderDto(
     Guid OrderId,
-    Guid UserId,
+    Guid CustomerId,
     Guid BatchId,
     int BatchNumber,
     Guid ProductTypeId,
@@ -16,7 +16,7 @@ public record OrderDto(
 /*
     {
       "orderId": "f61e00ac-9b18-4c94-a37a-55e98fc0e8da",
-      "userId": "f61e00ac-9b18-4c94-a37a-55e98fc0e8da",
+      "customerId": "f61e00ac-9b18-4c94-a37a-55e98fc0e8da",
       "batchId": "f11c40f5-1c0a-49c0-9ec9-97ab8d3a8889",
       "batchNumber": 7,
       "productTypeId": "ad05f212-1ec7-4c53-bc24-4b76c2c7ef94",
