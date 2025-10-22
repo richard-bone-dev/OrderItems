@@ -1,7 +1,8 @@
 ﻿using Api.Application.Abstractions;
-using Api.Application.Dtos;
-using Api.Application.Orders.Commands.Handlers;
 using Api.Application.Customers.Dtos;
+using Api.Application.Dtos;
+using Api.Application.Orders.Dtos;
+using Api.Application.Payments.Dtos;
 using Api.Domain.ValueObjects;
 
 namespace Api.Application.Customers.Queries.Handlers;

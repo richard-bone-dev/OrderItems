@@ -1,5 +1,4 @@
 ﻿using Api.Application.Abstractions;
-using Api.Application.Orders.Commands.Handlers;
 using Api.Application.ProductTypes.Dtos;
 using Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

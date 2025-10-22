@@ -1,5 +1,4 @@
 ﻿using Api.Application.Abstractions;
-using Api.Application.Orders.Commands.Handlers;
 using Api.Application.Payments.Dtos;
 using Api.Domain.ValueObjects;
 
