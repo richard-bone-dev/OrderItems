@@ -5,6 +5,7 @@ using Api.Domain.ValueObjects;
 using Api.Infrastructure;
 using Api.Infrastructure.Http;
 using Api.Infrastructure.Persistence;
+using Api.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -64,6 +65,7 @@ public class Program
         );
 
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddScoped<IReportingService, ReportingService>();
 
         builder.Services.AddSingleton<IApiErrorResponseFactory, ApiErrorResponseFactory>();
 
