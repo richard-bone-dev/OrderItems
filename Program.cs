@@ -3,6 +3,7 @@ using Api.Domain.Core;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 using Api.Infrastructure;
+using Api.Infrastructure.Http;
 using Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -64,7 +65,20 @@ public class Program
 
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        builder.Services.AddControllersWithViews();
+        builder.Services.AddSingleton<IApiErrorResponseFactory, ApiErrorResponseFactory>();
+
+        builder.Services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add<ExceptionMappingFilter>();
+            })
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var factory = context.HttpContext.RequestServices.GetRequiredService<IApiErrorResponseFactory>();
+                    return factory.Create(context);
+                };
+            });
         builder.Services.AddSecurityServices(builder.Configuration, builder.Environment);
 
         builder.Services.AddEndpointsApiExplorer();
