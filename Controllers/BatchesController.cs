@@ -28,5 +28,9 @@ public class BatchesController : ControllerBase
 
     [HttpGet("current")]
     public async Task<ActionResult<BatchDto?>> GetCurrentAsync(CancellationToken ct)
-        => Ok(await _getCurrent.HandleAsync(new GetCurrentBatchQuery(), ct));
+    {
+        ct.ThrowIfCancellationRequested();
+
+        return Ok(await _getCurrent.HandleAsync(new GetCurrentBatchQuery(), ct));
+    }
 }
