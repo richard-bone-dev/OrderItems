@@ -1,4 +1,5 @@
-﻿using Api.Application.Batches.Commands;
+﻿using System.Threading.Tasks;
+using Api.Application.Batches.Commands;
 using Api.Application.Batches.Commands.Handlers;
 using Api.Application.Batches.Dtos;
 using Api.Application.Batches.Queries;
@@ -28,5 +29,12 @@ public class BatchesController : ControllerBase
 
     [HttpGet("current")]
     public async Task<ActionResult<BatchDto?>> GetCurrentAsync(CancellationToken ct)
-        => Ok(await _getCurrent.HandleAsync(new GetCurrentBatchQuery(), ct));
+    {
+        if (ct.IsCancellationRequested)
+        {
+            throw new TaskCanceledException();
+        }
+
+        return Ok(await _getCurrent.HandleAsync(new GetCurrentBatchQuery(), ct));
+    }
 }
