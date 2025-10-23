@@ -40,3 +40,4 @@ public class PlaceOrderWithPartialPaymentHandler
 
         return OrderMapper.ToDto(order, batch.Number);
     }
+}

@@ -46,9 +46,6 @@ namespace Api.Migrations
                     b.Property<Guid>("BatchId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
@@ -66,11 +63,11 @@ namespace Api.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -238,13 +235,13 @@ namespace Api.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
@@ -260,26 +257,26 @@ namespace Api.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("CustomerId", "RoleId");
+                    b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
 
@@ -288,7 +285,7 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
@@ -300,7 +297,7 @@ namespace Api.Migrations
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CustomerId", "LoginProvider", "Name");
+                    b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
@@ -358,7 +355,9 @@ namespace Api.Migrations
 
                     b.HasOne("Customer", null)
                         .WithMany("Orders")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.OwnsMany("Api.Domain.Entities.OrderDetail", "OrderDetails", b1 =>
                         {
@@ -475,7 +474,7 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Customer", b =>
                 {
-                    b.OwnsOne("Api.Domain.ValueObjects.UserName", "Name", b1 =>
+                    b.OwnsOne("Api.Domain.ValueObjects.CustomerName", "Name", b1 =>
                         {
                             b1.Property<Guid>("CustomerId")
                                 .HasColumnType("uniqueidentifier");
@@ -511,7 +510,7 @@ namespace Api.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -520,7 +519,7 @@ namespace Api.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -535,7 +534,7 @@ namespace Api.Migrations
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -544,7 +543,7 @@ namespace Api.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
