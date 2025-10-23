@@ -140,20 +140,18 @@ public static class DataSeeder
     {
         if (environment == "Testing")
         {
-            SeedForTestingAsync(context);
+            await SeedForTestingAsync(context);
         }
         else
         {
-            SeedForNormalAsync(context);
+            await SeedForNormalAsync(context);
         }
     }
 
-    private static async void SeedForNormalAsync(ApplicationDbContext context)
+    private static async Task SeedForNormalAsync(ApplicationDbContext context)
     {
-        // Safe, idempotent seeding for Dev/Prod (runs after Migrate)
         if (!context.ProductTypes.Any())
         {
-            //Array.Empty<ProductType>();
             var products = new[] {
                 ProductType.Create("None", new Money(null)),
                 ProductType.Create("1", new Money(40m)),
@@ -195,69 +193,60 @@ public static class DataSeeder
         {
             var customers = new List<Customer>
             {
-                CreateCustomer("Tree", [8m, 4m], batch.Id),
-                CreateCustomer("DC", [9m, 2m, 8m, 4m, 4m], batch.Id),
-                CreateCustomer("MrSherg", [7m, 4m, 6m], batch.Id),
-                CreateCustomer("Rozweiler", new [] { 2m, 7m, 12m, 7m, 4m, 6m }, batch.Id),
-                CreateCustomer("Kieran", new [] { 17m }, batch.Id),
-                CreateCustomer("Linc", new [] { 12m }, batch.Id),
-                CreateCustomer("Pullen", new [] { 12m }, batch.Id),
-                CreateCustomer("Saffer", new [] { 8m }, batch.Id),
-                CreateCustomer("Sean", new [] { 2m, 4m }, batch.Id),
-                CreateCustomer("Wiggy", new [] { 4m }, batch.Id),
-                CreateCustomer("Tall", new [] { 4m }, batch.Id),
-                CreateCustomer("JoeQ", new [] { 4m }, batch.Id),
-                CreateCustomer("Just", new [] { 4m }, batch.Id),
-                CreateCustomer("Jock", new [] { 4m }, batch.Id),
-                CreateCustomer("BoatA", new [] { 3m }, batch.Id),
-                CreateCustomer("Parsonage", new [] { 2m }, batch.Id),
-                CreateCustomer("Tropical", new [] { 86m, 3.5m }, batch.Id),
-                CreateCustomer("Syd", new [] { 40m }, batch.Id),
-                CreateCustomer("Aussie", new [] { 69m }, batch.Id),
-                CreateCustomer("Stu", new [] { 54.5m }, batch.Id),
-                CreateCustomer("Landscaper", new [] { 12m }, batch.Id),
-                CreateCustomer("Pill", new [] { 12m }, batch.Id),
-                CreateCustomer("Tracey", new [] { 8m }, batch.Id),
-                CreateCustomer("Crystal", new [] { 6m }, batch.Id),
-                CreateCustomer("Bordeaux", new [] { 4m }, batch.Id),
-                CreateCustomer("Aidy", new [] { 4m }, batch.Id),
-                CreateCustomer("SamMc", new [] { 12m }, batch.Id)
+                CreateCustomer("Tree", [8m, 4m, 8m, 4m], [2m], batch.Id),
+                CreateCustomer("DC", [9m, 2m, 8m, 4m, 4m], [], batch.Id),
+                CreateCustomer("MrSherg", [7m, 4m, 6m], [10m], batch.Id),
+                CreateCustomer("Rozweiler", [2m, 7m, 12m, 7m, 4m, 6m, 12m], [], batch.Id),
+                CreateCustomer("Kieran", [30m, 2m], [], batch.Id),
+                CreateCustomer("Linc", [12m], [], batch.Id),
+                CreateCustomer("Pullen", [12m], [], batch.Id),
+                CreateCustomer("Saffer", [8m], [], batch.Id),
+                CreateCustomer("Sean", [2m, 4m], [], batch.Id),
+                CreateCustomer("Wiggy", [4m, 4m], [], batch.Id),
+                CreateCustomer("Tall", [4m], [], batch.Id),
+                CreateCustomer("JoeQ", [4m], [], batch.Id),
+                CreateCustomer("Jock", [4m, 4m], [], batch.Id),
+                CreateCustomer("BoatA", [3m], [], batch.Id),
+                CreateCustomer("Parsonage", [2m], [], batch.Id),
+                CreateCustomer("Tropical", [49.5m], [], batch.Id),
+                CreateCustomer("Syd", [40m], [], batch.Id),
+                CreateCustomer("Aussie", [71m], [], batch.Id),
+                CreateCustomer("Stu", [54.5m], [], batch.Id),
+                CreateCustomer("Landscaper", [12m], [], batch.Id),
+                CreateCustomer("Pill", [12m], [], batch.Id),
+                CreateCustomer("Bordeaux", [4m, 4m], [], batch.Id),
+                CreateCustomer("Aidy", [4m], [], batch.Id),
+                //CreateCustomer("Tracey", [8m], [], batch.Id),
+                //CreateCustomer("Crystal", [6m], [], batch.Id),
+                //CreateCustomer("SamMc", [12m], batch.Id),
+                //CreateCustomer("Just", [0m], [], batch.Id)
             };
 
-            // Create Orders for each Customer
-            foreach (var customer in customers)
-            {
-                // Create multiple order details per customer
-                var orderDetails = customer.Orders.SelectMany(o => o.OrderDetails).ToList();
+            var sorted = customers.OrderByDescending(c => c.Balance.Amount);
+            var amt = customers.Sum(c => c.Balance.Amount.HasValue ? c.Balance.Amount.Value : 0);
 
-                // Example batch creation logic
-                var order = Order.Create(
-                    new CustomerId(customer.Id.Value),
-                    new BatchId(batch.Id.Value),
-                    orderDetails
-                );
+            customers.ForEach(c => context.Customers.Add(c));
 
-                customer.AddOrder(order);
-                context.Customers.Add(customer);
-            }
-
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 
-    private static Customer CreateCustomer(string name, decimal[] values, BatchId batchId)
+    private static Customer CreateCustomer(
+        string name,
+        decimal[] orderValues,
+        decimal[] paymentValues,
+        BatchId batchId)
     {
         var customer = Customer.Register(new CustomerName(name));
 
-        var orderDetails = values.Select(v => 
+        var orderDetails = orderValues.Select(v => 
             new OrderDetail(
                 new ProductTypeId(Guid.NewGuid()),
                 new Money(v),
-                DateTime.UtcNow.AddDays(-values.ToList().IndexOf(v))
+                DateTime.UtcNow.AddDays(-orderValues.ToList().IndexOf(v))
             ))
             .ToList();
 
-        // Use the existing batchId here
         var order = Order.Create(
             new CustomerId(customer.Id),
             batchId,
@@ -265,10 +254,16 @@ public static class DataSeeder
         );
 
         customer.AddOrder(order);
+
+        var payments = paymentValues.Select(p =>
+            Payment.Create(customer.Id, p, DateTime.UtcNow)).ToList();
+
+        payments.ForEach(customer.AddPayment);
+
         return customer;
     }
 
-    private static async void SeedForTestingAsync(ApplicationDbContext context)
+    private static async Task SeedForTestingAsync(ApplicationDbContext context)
     {
         // Always start with a clean slate in tests (prevents duplicate “Test User”)
         context.Database.EnsureDeleted();
@@ -285,174 +280,3 @@ public static class DataSeeder
         await context.SaveChangesAsync();
     }
 }
-
-//public static class DataSeeder
-//{
-//    public static void Seed(ApplicationDbContext context)
-//    {
-//        if (!context.ProductTypes.Any())
-//        {
-//            var products = new List<ProductType>
-//            {
-//                ProductType.Create(0m),
-//                ProductType.Create(40m),
-//                ProductType.Create(70m),
-//                ProductType.Create(80m),
-//                ProductType.Create(100m),
-//                ProductType.Create(120m),
-//                ProductType.Create(190m)
-//            };
-
-//            context.ProductTypes.AddRange(products);
-//            context.SaveChanges();
-//        }
-
-//        var productTypeId = context.ProductTypes.OrderBy(pt => pt.UnitPrice).First().Id;
-
-//        // only seed once
-//        if (!context.Users.Any())
-//        {
-
-//            var starting = new Dictionary<string, decimal>
-//            {
-//                ["None"] = 0m,
-//                ["Admin"] = 0m,
-//                ["AL"] = 120m,
-//                ["TQ"] = 54m,
-//                ["SS"] = 54.5m,
-//                ["AR"] = 38m + 4m,
-//                ["DC"] = 20m - 10m + 8m,
-//                ["GB"] = 19m - 13m + 8m,
-//                ["SC"] = 15m,
-//                ["TC"] = 15m,
-//                ["MK"] = 12m,
-//                ["KC"] = 12m,
-//                ["WB"] = 12m,
-//                ["PT"] = 8m,
-//                ["AD"] = 8m,
-//                ["MD"] = 8m,
-//                ["RS"] = 6m + 12m,
-//                ["KR"] = 6m,
-//                ["SM"] = 4m + 4m,
-//                ["MP"] = 4m - 4m,
-//                ["JR"] = 4m,
-//                ["LI"] = 4m,
-//                ["TU"] = 4m,
-//                ["AM"] = 4m,
-//                ["SI"] = 4m,
-//                ["HA"] = 3m,
-//                ["AN"] = 2m
-//            };
-
-//            var s = starting.Values.Sum();
-
-//            var sorted = starting.OrderByDescending(c => c.Value);
-
-//            foreach (var (code, balance) in sorted)
-//            {
-//                var customer = User.Register(code);
-
-//                if (balance > 0)
-//                {
-//                    customer.PlaceOrder(
-//                        new CustomerId(customer.Id),
-//                        new BatchNumber(1),
-//                        productTypeId,
-//                        new OrderDetail(new Money(balance * 10), null, null)
-//                    );
-//                }
-
-//                context.Users.Add(customer);
-//            }
-//        }
-
-//        context.SaveChanges();
-//    }
-//}
-
-//public static class DataSeeder1
-//{
-//    public static async Task SeedAsync(ApplicationDbContext context)
-//    {
-//        if (await context.Customers.AnyAsync())
-//            return;
-
-//        var batch = Batch.Create(new BatchNumber(1));
-//        var productTypeId = new ProductTypeId(Guid.NewGuid());
-
-//        // Define your customers with their full order structures
-//        var customers = new List<Customer>
-//            {
-//                CreateCustomer("Tree", [8m, 4m]),
-//                CreateCustomer("DC", [9m, 2m, 8m, 4m, 4m]),
-//                CreateCustomer("MrSherg", [7m, 4m, 6m]),
-//                CreateCustomer("Rozweiler", new [] { 2m, 7m, 12m, 7m, 4m, 6m }),
-//                CreateCustomer("Kieran", new [] { 17m }),
-//                CreateCustomer("Linc", new [] { 12m }),
-//                CreateCustomer("Pullen", new [] { 12m }),
-//                CreateCustomer("Saffer", new [] { 8m }),
-//                CreateCustomer("Sean", new [] { 2m, 4m }),
-//                CreateCustomer("Wiggy", new [] { 4m }),
-//                CreateCustomer("Tall", new [] { 4m }),
-//                CreateCustomer("JoeQ", new [] { 4m }),
-//                CreateCustomer("Just", new [] { 4m }),
-//                CreateCustomer("Jock", new [] { 4m }),
-//                CreateCustomer("BoatA", new [] { 3m }),
-//                CreateCustomer("Parsonage", new [] { 2m }),
-//                CreateCustomer("Tropical", new [] { 86m, 3.5m }),
-//                CreateCustomer("Syd", new [] { 40m }),
-//                CreateCustomer("Aussie", new [] { 69m }),
-//                CreateCustomer("Stu", new [] { 54.5m }),
-//                CreateCustomer("Landscaper", new [] { 12m }),
-//                CreateCustomer("Pill", new [] { 12m }),
-//                CreateCustomer("Tracey", new [] { 8m }),
-//                CreateCustomer("Crystal", new [] { 6m }),
-//                CreateCustomer("Bordeaux", new [] { 4m }),
-//                CreateCustomer("Aidy", new [] { 4m }),
-//                CreateCustomer("SamMc", new [] { 12m })
-//            };
-
-//        // Create Orders for each Customer
-//        foreach (var customer in customers)
-//        {
-//            // Create multiple order details per customer
-//            var orderDetails = customer.Orders.SelectMany(o => o.OrderDetails).ToList();
-
-//            // Example batch creation logic
-//            var order = Order.Create(
-//                new CustomerId(customer.Id),
-//                batch.Id,
-//                orderDetails
-//            );
-
-//            customer.AddOrder(order);
-//            context.Customers.Add(customer);
-//        }
-
-//        await context.SaveChangesAsync();
-//    }
-
-//    private static Customer CreateCustomer(string name, decimal[] values)
-//    {
-//        var customer = Customer.Register(new UserName(name));
-
-//        // Build a single order with multiple details
-//        var orderDetails = values
-//            .Select(v => new OrderDetail(
-//                new ProductTypeId(Guid.NewGuid()),
-//                new Money(v),
-//                DateTime.UtcNow.AddDays(-values.ToList().IndexOf(v))
-//            ))
-//            .ToList();
-
-//        var order = Order.Create(
-//            new CustomerId(customer.Id),
-//            new BatchId(Guid.NewGuid()),
-//            orderDetails
-//        );
-
-//        customer.AddOrder(order);
-//        return customer;
-//    }
-//}
-
