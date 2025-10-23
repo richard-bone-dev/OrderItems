@@ -1,4 +1,4 @@
-﻿namespace Api.Application.Orders.Commands;
+namespace Api.Application.Orders.Commands;
 
 public record PlaceOrderWithPartialPaymentCommand(
     Guid CustomerId,
@@ -7,4 +7,4 @@ public record PlaceOrderWithPartialPaymentCommand(
     decimal PaidAmount,
     decimal RemainingAmount,
     DateTime? DueDate
-);
+) : IPlaceOrderCommand;
