@@ -7,15 +7,20 @@ namespace Api.Application.Customers.Commands.Handlers;
 public class CreateCustomerHandler : ICommandHandlerAsync<CreateCustomerCommand, CustomerDto>
 {
     private readonly ICustomerRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateCustomerHandler(ICustomerRepository repository) => _repository = repository;
+    public CreateCustomerHandler(ICustomerRepository repository, IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<CustomerDto> HandleAsync(CreateCustomerCommand command, CancellationToken ct = default)
     {
         var user = Customer.Register(new CustomerName(command.Name));
 
         await _repository.AddAsync(user, ct);
-        await _repository.SaveChangesAsync(ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return new CustomerDto(
             user.Id.Value,

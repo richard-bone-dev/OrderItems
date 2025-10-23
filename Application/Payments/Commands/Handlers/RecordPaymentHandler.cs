@@ -7,8 +7,13 @@ using Api.Domain.ValueObjects;
 public class RecordPaymentHandler : ICommandHandlerAsync<RecordPaymentCommand, PaymentDto>
 {
     private readonly ICustomerRepository _repo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public RecordPaymentHandler(ICustomerRepository repo) => _repo = repo;
+    public RecordPaymentHandler(ICustomerRepository repo, IUnitOfWork unitOfWork)
+    {
+        _repo = repo;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<PaymentDto> HandleAsync(RecordPaymentCommand cmd, CancellationToken ct = default)
     {
@@ -18,7 +23,7 @@ public class RecordPaymentHandler : ICommandHandlerAsync<RecordPaymentCommand, P
         var payment = Payment.Create(cmd.CustomerId, cmd.Amount, cmd.PaymentDate);
         customer.AddPayment(payment);
 
-        await _repo.SaveChangesAsync(ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return new PaymentDto(payment.Id.Value, customer.Id.Value, cmd.Amount, payment.PaymentDate);
     }

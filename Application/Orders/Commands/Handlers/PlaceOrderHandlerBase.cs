@@ -13,11 +13,13 @@ public abstract class PlaceOrderHandlerBase<TCommand>
 {
     private readonly ICustomerRepository _customerRepo;
     private readonly IBatchRepository _batchRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    protected PlaceOrderHandlerBase(ICustomerRepository customerRepo, IBatchRepository batchRepo)
+    protected PlaceOrderHandlerBase(ICustomerRepository customerRepo, IBatchRepository batchRepo, IUnitOfWork unitOfWork)
     {
         _customerRepo = customerRepo;
         _batchRepo = batchRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<OrderDto> HandleAsync(TCommand command, CancellationToken ct = default)
@@ -34,12 +36,7 @@ public abstract class PlaceOrderHandlerBase<TCommand>
         var customerUpdated = AttachOrderToCustomer(context.Customer, order);
         customerUpdated |= await HandleCustomerUpdatesAsync(context.Customer, order, command, ct);
 
-        await _batchRepo.SaveChangesAsync(ct);
-
-        if (customerUpdated)
-        {
-            await _customerRepo.SaveChangesAsync(ct);
-        }
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return OrderMapper.ToDto(order, context.Batch.Number);
     }

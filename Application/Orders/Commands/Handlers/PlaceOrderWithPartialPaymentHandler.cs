@@ -8,8 +8,11 @@ namespace Api.Application.Orders.Commands.Handlers;
 public class PlaceOrderWithPartialPaymentHandler
     : PlaceOrderHandlerBase<PlaceOrderWithPartialPaymentCommand>
 {
-    public PlaceOrderWithPartialPaymentHandler(ICustomerRepository customerRepo, IBatchRepository batchRepo)
-        : base(customerRepo, batchRepo)
+    public PlaceOrderWithPartialPaymentHandler(
+        ICustomerRepository customerRepo,
+        IBatchRepository batchRepo,
+        IUnitOfWork unitOfWork)
+        : base(customerRepo, batchRepo, unitOfWork)
     {
     }
 
