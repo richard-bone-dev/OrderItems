@@ -22,7 +22,7 @@ public abstract class PlaceOrderHandlerBase<TCommand>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<OrderDto> HandleAsync(TCommand command, CancellationToken ct = default)
+    public virtual async Task<OrderDto> HandleAsync(TCommand command, CancellationToken ct = default)
     {
         var context = await LoadContextAsync(command, ct);
 
