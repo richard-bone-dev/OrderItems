@@ -34,7 +34,7 @@ public class CustomersController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return ValidationProblem(ModelState);
+            return BadRequest(ModelState);
         }
 
         var result = await _createCustomer.HandleAsync(cmd, ct);
