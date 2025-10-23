@@ -281,7 +281,7 @@ public static class DataSeeder
 
     private static async Task SeedForTestingAsync(ApplicationDbContext context)
     {
-        // Always start with a clean slate in tests (prevents duplicate Test User)
+        // Always start with a clean slate in tests (prevents duplicate Test Customer)
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
@@ -290,8 +290,8 @@ public static class DataSeeder
         //var pt100 = ProductType.Create(100m);
         //context.ProductTypes.AddRange(pt50, pt100);
 
-        var testUser = Customer.Register(new CustomerName("Test User"));
-        context.Customers.Add(testUser);
+        var testCustomer = Customer.Register(new CustomerName("Test Customer"));
+        context.Customers.Add(testCustomer);
 
         await context.SaveChangesAsync();
     }

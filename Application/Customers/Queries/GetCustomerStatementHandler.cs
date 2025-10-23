@@ -28,7 +28,7 @@ public class GetCustomerStatementHandler : IQueryHandlerAsync<GetCustomerStateme
 
 
         var user = await _customerRepository.GetByIdAsync(userId, ct)
-            ?? throw new KeyNotFoundException("User not found.");
+            ?? throw new KeyNotFoundException("Customer not found.");
 
 
         var orders = await _orderRepository.GetByCustomerIdAsync(userId, ct);
