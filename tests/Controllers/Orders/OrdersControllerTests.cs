@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
-namespace Api.Tests.Controllers;
+namespace Api.Tests.Controllers.Orders;
 
 public class OrdersControllerTests
 {
