@@ -6,8 +6,11 @@ namespace Api.Application.Orders.Commands.Handlers;
 public class PlaceOrderWithDeferredPaymentHandler
     : PlaceOrderHandlerBase<PlaceOrderWithDeferredPaymentCommand>
 {
-    public PlaceOrderWithDeferredPaymentHandler(ICustomerRepository customerRepo, IBatchRepository batchRepo)
-        : base(customerRepo, batchRepo)
+    public PlaceOrderWithDeferredPaymentHandler(
+        ICustomerRepository customerRepo,
+        IBatchRepository batchRepo,
+        IUnitOfWork unitOfWork)
+        : base(customerRepo, batchRepo, unitOfWork)
     {
     }
 

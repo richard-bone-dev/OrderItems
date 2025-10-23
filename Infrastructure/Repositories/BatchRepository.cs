@@ -1,4 +1,4 @@
-﻿using Api.Application.Abstractions;
+using Api.Application.Abstractions;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;
 using Api.Infrastructure.Persistence;
@@ -23,9 +23,6 @@ public class BatchRepository : IBatchRepository
 
     public async Task AddAsync(Batch batch, CancellationToken ct = default)
         => await _db.Batches.AddAsync(batch, ct);
-
-    public async Task SaveChangesAsync(CancellationToken ct = default)
-        => await _db.SaveChangesAsync(ct);
 
     public async Task<IReadOnlyCollection<Batch>> GetAllAsync(CancellationToken ct = default)
         => await _db.Batches.Include(b => b.Orders).ToListAsync(ct);

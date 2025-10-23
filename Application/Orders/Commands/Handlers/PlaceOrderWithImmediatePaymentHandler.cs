@@ -8,8 +8,11 @@ namespace Api.Application.Orders.Commands.Handlers;
 public class PlaceOrderWithImmediatePaymentHandler
     : PlaceOrderHandlerBase<PlaceOrderWithImmediatePaymentCommand>
 {
-    public PlaceOrderWithImmediatePaymentHandler(ICustomerRepository customerRepo, IBatchRepository batchRepo)
-        : base(customerRepo, batchRepo)
+    public PlaceOrderWithImmediatePaymentHandler(
+        ICustomerRepository customerRepo,
+        IBatchRepository batchRepo,
+        IUnitOfWork unitOfWork)
+        : base(customerRepo, batchRepo, unitOfWork)
     {
     }
 

@@ -1,4 +1,4 @@
-﻿using Api.Application.Abstractions;
+using Api.Application.Abstractions;
 using Api.Domain.ValueObjects;
 using Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +18,4 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<IReadOnlyCollection<Customer>> GetAllAsync(CancellationToken ct = default)
         => await _db.Customers.Include(u => u.Orders).Include(u => u.Payments).ToListAsync(ct);
-
-    public async Task SaveChangesAsync(CancellationToken ct = default)
-        => await _db.SaveChangesAsync(ct);
 }

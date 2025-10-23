@@ -38,7 +38,7 @@ public class Program
         }
         else
         {
-            // Register placeholder — real InMemory will be added in the factory
+            // Register placeholder  real InMemory will be added in the factory
             //builder.Services.AddDbContext<ApplicationDbContext>(options =>
             //    options.UseInMemoryDatabase("Placeholder"));
         }
@@ -61,6 +61,8 @@ public class Program
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
         );
+
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddSecurityServices(builder.Configuration, builder.Environment);
@@ -265,7 +267,7 @@ public static class DataSeeder
 
     private static async Task SeedForTestingAsync(ApplicationDbContext context)
     {
-        // Always start with a clean slate in tests (prevents duplicate “Test User”)
+        // Always start with a clean slate in tests (prevents duplicate Test User)
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
