@@ -55,7 +55,7 @@ public abstract class PlaceOrderHandlerBase<TCommand>
         var productTypeId = new ProductTypeId(command.ProductTypeId);
 
         var customer = await _customerRepo.GetByIdAsync(customerId, ct)
-                       ?? throw new KeyNotFoundException("User not found.");
+                       ?? throw new KeyNotFoundException("Customer not found.");
         var batch = await _batchRepo.GetByIdAsync(batchId, ct)
                     ?? throw new KeyNotFoundException("Batch not found.");
 

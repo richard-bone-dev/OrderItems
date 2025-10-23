@@ -18,7 +18,7 @@ public class RecordPaymentHandler : ICommandHandlerAsync<RecordPaymentCommand, P
     public async Task<PaymentDto> HandleAsync(RecordPaymentCommand cmd, CancellationToken ct = default)
     {
         var customer = await _repo.GetByIdAsync(new CustomerId(cmd.CustomerId), ct)
-                   ?? throw new KeyNotFoundException("User not found.");
+                   ?? throw new KeyNotFoundException("Customer not found.");
 
         var payment = Payment.Create(cmd.CustomerId, cmd.Amount, cmd.PaymentDate);
         customer.AddPayment(payment);
