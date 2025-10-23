@@ -37,7 +37,7 @@ public class ReportingService : IReportingService
         {
             var orderDetails = batch.Orders.SelectMany(o => o.OrderDetails).ToList();
             var totalQuantity = orderDetails.Sum(d => d.Quantity);
-            var totalRevenue = orderDetails.Sum(d => d.Total.Amount);
+            var totalRevenue = orderDetails.Sum(d => d.Total.Amount ?? 0m);
 
             return new BatchUtilizationReportItem(
                 batch.Id.Value,
@@ -74,7 +74,7 @@ public class ReportingService : IReportingService
                 .SelectMany(o => o.OrderDetails)
                 .Select(detail => new
                 {
-                    Amount = detail.Total.Amount,
+                    Amount = detail.Total.Amount ?? 0m,
                     DueDate = detail.DueDate?.Date,
                     PlacedAt = detail.PlacedAt.Date
                 })
@@ -82,7 +82,7 @@ public class ReportingService : IReportingService
                 .ToList();
 
             var totalCharged = orderDetails.Sum(d => d.Amount);
-            var totalPaid = customer.Payments.Sum(p => p.PaidAmount.Amount);
+            var totalPaid = customer.Payments.Sum(p => p.PaidAmount.Amount ?? 0m);
             var balance = totalCharged - totalPaid;
 
             var paymentsRemaining = totalPaid;
@@ -153,7 +153,7 @@ public class ReportingService : IReportingService
             {
                 var productType = productTypes.FirstOrDefault(pt => pt.Id.Value == group.Key);
                 var totalQuantity = group.Sum(d => d.Quantity);
-                var totalRevenue = group.Sum(d => d.Total.Amount);
+                var totalRevenue = group.Sum(d => d.Total.Amount ?? 0m);
                 var averagePrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0m;
 
                 return new ProductRevenueReportItem(
@@ -184,11 +184,11 @@ public class ReportingService : IReportingService
         var chargeByDate = orders
             .SelectMany(o => o.OrderDetails)
             .GroupBy(d => d.PlacedAt.Date)
-            .ToDictionary(g => g.Key, g => g.Sum(d => d.Total.Amount));
+            .ToDictionary(g => g.Key, g => g.Sum(d => d.Total.Amount ?? 0m));
 
         var paidByDate = payments
             .GroupBy(p => p.PaymentDate.Date)
-            .ToDictionary(g => g.Key, g => g.Sum(p => p.PaidAmount.Amount));
+            .ToDictionary(g => g.Key, g => g.Sum(p => p.PaidAmount.Amount ?? 0m));
 
         var allDates = chargeByDate.Keys
             .Union(paidByDate.Keys)
@@ -299,7 +299,7 @@ public class ReportingService : IReportingService
                     detail.ProductTypeId.Value,
                     productTypeName ?? "Unknown",
                     detail.Quantity,
-                    detail.Total.Amount,
+                    detail.Total.Amount ?? 0m,
                     detail.PlacedAt,
                     detail.DueDate,
                     status,
