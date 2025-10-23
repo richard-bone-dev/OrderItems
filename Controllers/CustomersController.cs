@@ -32,6 +32,11 @@ public class CustomersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CustomerDto>> CreateAsync([FromBody] CreateCustomerCommand cmd, CancellationToken ct)
     {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
         var result = await _createCustomer.HandleAsync(cmd, ct);
         return CreatedAtAction(nameof(GetByIdAsync), new { customerId = result.Id }, result);
     }
@@ -65,7 +70,14 @@ public class CustomersController : ControllerBase
     [HttpGet("{customerId:guid}/statement")]
     public async Task<ActionResult<CustomerStatementResponse>> GetStatementAsync(Guid customerId, CancellationToken ct)
     {
-        var response = await _getStatement.HandleAsync(new GetCustomerStatementQuery(new CustomerId(customerId)), ct);
-        return Ok(response);
+        try
+        {
+            var response = await _getStatement.HandleAsync(new GetCustomerStatementQuery(new CustomerId(customerId)), ct);
+            return Ok(response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 }
