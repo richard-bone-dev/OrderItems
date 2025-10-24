@@ -1,4 +1,4 @@
-﻿using Api.Application.Dtos;
+﻿using Api.Application.Payments.Dtos;
 using Api.Application.Interfaces;
 using Api.Domain.ValueObjects;
 
