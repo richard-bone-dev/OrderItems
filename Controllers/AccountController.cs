@@ -108,7 +108,7 @@ public class AccountController : Controller
 
         foreach (var error in result.Errors)
         {
-            ModelState.AddModelError(error.Code, error.Description);
+            ModelState.AddModelError(string.Empty, error.Description);
         }
 
         return View(viewModel);
@@ -130,7 +130,12 @@ public class AccountController : Controller
     {
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
-            return Redirect(returnUrl);
+            return LocalRedirect(returnUrl);
+        }
+
+        if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            TempData["StatusMessage"] = successMessage;
         }
 
         return fallback();
