@@ -1,5 +1,13 @@
-﻿using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Threading.RateLimiting;
 
 namespace Api.Infrastructure
 {
@@ -7,6 +15,8 @@ namespace Api.Infrastructure
     {
         public static void AddSecurityServices(this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
         {
+            _ = config;
+            _ = env;
             // --- HTTPS + HSTS ---
             services.AddHsts(options =>
             {
