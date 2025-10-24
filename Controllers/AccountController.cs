@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,11 @@ public class AccountController : Controller
     [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
     {
+        if (TempData.TryGetValue("StatusMessage", out var statusMessage))
+        {
+            ViewData["StatusMessage"] = statusMessage;
+        }
+
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 
@@ -43,7 +49,11 @@ public class AccountController : Controller
 
         if (result.Succeeded)
         {
-            return RedirectToLocal(viewModel.ReturnUrl);
+            return RedirectToLocal(viewModel.ReturnUrl, () =>
+            {
+                TempData["StatusMessage"] = "You have been signed in.";
+                return RedirectToAction(nameof(Login));
+            });
         }
 
         if (result.RequiresTwoFactor)
@@ -89,7 +99,11 @@ public class AccountController : Controller
         if (result.Succeeded)
         {
             await _signInManager.SignInAsync(user, isPersistent: viewModel.RememberMe);
-            return RedirectToLocal(viewModel.ReturnUrl);
+            return RedirectToLocal(viewModel.ReturnUrl, () =>
+            {
+                TempData["StatusMessage"] = "Your account has been created and you are signed in.";
+                return RedirectToAction(nameof(Login));
+            });
         }
 
         foreach (var error in result.Errors)
@@ -105,17 +119,21 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout(string? returnUrl = null)
     {
         await _signInManager.SignOutAsync();
-        return RedirectToLocal(returnUrl);
+        return RedirectToLocal(returnUrl, () =>
+        {
+            TempData["StatusMessage"] = "You have been signed out.";
+            return RedirectToAction(nameof(Login));
+        });
     }
 
-    private IActionResult RedirectToLocal(string? returnUrl)
+    private IActionResult RedirectToLocal(string? returnUrl, Func<IActionResult> fallback)
     {
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
             return Redirect(returnUrl);
         }
 
-        return Redirect(Url.Content("~/"));
+        return fallback();
     }
 
     public sealed record LoginViewModel
