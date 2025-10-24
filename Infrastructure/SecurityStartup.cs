@@ -1,13 +1,18 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Linq;
 using System.Threading.RateLimiting;
+using System.Threading.Tasks;
+using Api.Infrastructure.Persistence;
 
 namespace Api.Infrastructure
 {
@@ -17,6 +22,50 @@ namespace Api.Infrastructure
         {
             _ = config;
             _ = env;
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = false;
+                })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";
+                options.LogoutPath = "/Account/Logout";
+                options.AccessDeniedPath = "/Account/Login";
+                options.SlidingExpiration = true;
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    if (IsApiRequest(context.Request))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    if (IsApiRequest(context.Request))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
+
             // --- HTTPS + HSTS ---
             services.AddHsts(options =>
             {
@@ -103,6 +152,21 @@ namespace Api.Infrastructure
 
             // --- Rate Limiting ---
             app.UseRateLimiter();
+        }
+
+        private static bool IsApiRequest(HttpRequest request)
+        {
+            if (request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (request.Headers.TryGetValue("Accept", out var accepts))
+            {
+                return accepts.Any(a => a.Contains("application/json", StringComparison.OrdinalIgnoreCase));
+            }
+
+            return false;
         }
     }
 }
