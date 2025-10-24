@@ -16,7 +16,6 @@ namespace Api.Infrastructure
         public static void AddSecurityServices(this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
         {
             _ = config;
-            _ = env;
             // --- HTTPS + HSTS ---
             services.AddHsts(options =>
             {
@@ -28,7 +27,10 @@ namespace Api.Infrastructure
             services.AddHttpsRedirection(options =>
             {
                 options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-                options.HttpsPort = 443;
+                if (env.IsProduction())
+                {
+                    options.HttpsPort = 443;
+                }
             });
 
             // --- Anti-forgery ---
