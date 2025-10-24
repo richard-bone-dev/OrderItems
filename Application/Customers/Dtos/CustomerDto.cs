@@ -9,3 +9,6 @@ public record CustomerDto(Guid Id, string Name, DateTime RegisteredAt);
       "registeredAt": "2025-09-12T08:00:00Z"
     }
 */
+
+
+public class CreateCustomerRequest { public string Name { get; set; } = string.Empty; }
