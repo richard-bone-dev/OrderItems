@@ -19,6 +19,7 @@
     <Compile Remove="Application\Abstractions\IOrderPaymentService.cs" />
     <Compile Remove="Application\Abstractions\IOrderService.cs" />
     <Compile Remove="Application\Abstractions\IPaymentService.cs" />
+    <Compile Remove="Controllers\AccountController.cs" />
     <Compile Remove="Domain\Core\IdGenerator.cs" />
     <Compile Remove="Domain\Core\StronglyTypedIntIdTypeConverter.cs" />
     <Compile Remove="Domain\Events\OrderPlaced.cs" />

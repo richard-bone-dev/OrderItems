@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Api.Application.Batches.Commands;
+﻿using Api.Application.Batches.Commands;
 using Api.Application.Batches.Commands.Handlers;
 using Api.Application.Batches.Dtos;
 using Api.Application.Batches.Queries;
