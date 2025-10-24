@@ -211,29 +211,29 @@ public static class DataSeeder
         {
             var customers = new List<Customer>
             {
-                CreateCustomer("Tree", [8m, 4m, 8m, 4m], [2m], batch.Id),
-                CreateCustomer("DC", [9m, 2m, 8m, 4m, 4m], [], batch.Id),
-                CreateCustomer("MrSherg", [7m, 4m, 6m], [10m], batch.Id),
-                CreateCustomer("Rozweiler", [2m, 7m, 12m, 7m, 4m, 6m, 12m], [], batch.Id),
-                CreateCustomer("Kieran", [30m, 2m], [], batch.Id),
-                CreateCustomer("Linc", [12m], [], batch.Id),
-                CreateCustomer("Pullen", [12m], [], batch.Id),
-                CreateCustomer("Saffer", [8m], [], batch.Id),
-                CreateCustomer("Sean", [2m, 4m], [], batch.Id),
-                CreateCustomer("Wiggy", [4m, 4m], [], batch.Id),
-                CreateCustomer("Tall", [4m], [], batch.Id),
-                CreateCustomer("JoeQ", [4m], [], batch.Id),
-                CreateCustomer("Jock", [4m, 4m], [], batch.Id),
-                CreateCustomer("BoatA", [3m], [], batch.Id),
-                CreateCustomer("Parsonage", [2m], [], batch.Id),
-                CreateCustomer("Tropical", [49.5m], [], batch.Id),
-                CreateCustomer("Syd", [40m], [], batch.Id),
-                CreateCustomer("Aussie", [71m], [], batch.Id),
-                CreateCustomer("Stu", [54.5m], [], batch.Id),
-                CreateCustomer("Landscaper", [12m], [], batch.Id),
-                CreateCustomer("Pill", [12m], [], batch.Id),
-                CreateCustomer("Bordeaux", [4m, 4m], [], batch.Id),
-                CreateCustomer("Aidy", [4m], [], batch.Id),
+                CreateCustomerOrder("Tree", [8m, 4m, 8m, 4m], [2m], batch.Id),
+                CreateCustomerOrder("DC", [9m, 2m, 8m, 4m, 4m], [], batch.Id),
+                CreateCustomerOrder("MrSherg", [7m, 4m, 6m, 4m], [10m], batch.Id),
+                CreateCustomerOrder("Rozweiler", [2m, 7m, 12m, 7m, 4m, 6m, 12m], [], batch.Id),
+                CreateCustomerOrder("Kieran", [30m, 2m, 4m, 4m], [], batch.Id),
+                CreateCustomerOrder("Linc", [12m], [], batch.Id),
+                CreateCustomerOrder("Pullen", [12m], [], batch.Id),
+                CreateCustomerOrder("Saffer", [8m], [], batch.Id),
+                CreateCustomerOrder("Sean", [2m, 4m], [], batch.Id),
+                CreateCustomerOrder("Wiggy", [4m, 4m], [], batch.Id),
+                CreateCustomerOrder("Tall", [4m], [], batch.Id),
+                CreateCustomerOrder("JoeQ", [4m], [], batch.Id),
+                CreateCustomerOrder("Jock", [4m, 4m], [], batch.Id),
+                CreateCustomerOrder("BoatA", [3m], [], batch.Id),
+                CreateCustomerOrder("Parsonage", [2m], [], batch.Id),
+                CreateCustomerOrder("Tropical", [49.5m, 8m], [], batch.Id),
+                CreateCustomerOrder("Syd", [40m], [], batch.Id),
+                CreateCustomerOrder("Aussie", [70m], [], batch.Id),
+                CreateCustomerOrder("Stu", [54.5m], [], batch.Id),
+                CreateCustomerOrder("Landscaper", [12m], [], batch.Id),
+                CreateCustomerOrder("Pill", [12m], [], batch.Id),
+                CreateCustomerOrder("Bordeaux", [4m, 4m], [], batch.Id),
+                CreateCustomerOrder("Aidy", [4m], [], batch.Id),
                 //CreateCustomer("Tracey", [8m], [], batch.Id),
                 //CreateCustomer("Crystal", [6m], [], batch.Id),
                 //CreateCustomer("SamMc", [12m], batch.Id),
@@ -247,38 +247,6 @@ public static class DataSeeder
 
             await context.SaveChangesAsync();
         }
-    }
-
-    private static Customer CreateCustomer(
-        string name,
-        decimal[] orderValues,
-        decimal[] paymentValues,
-        BatchId batchId)
-    {
-        var customer = Customer.Register(new CustomerName(name));
-
-        var orderDetails = orderValues.Select(v => 
-            new OrderDetail(
-                new ProductTypeId(Guid.NewGuid()),
-                new Money(v),
-                DateTime.UtcNow.AddDays(-orderValues.ToList().IndexOf(v))
-            ))
-            .ToList();
-
-        var order = Order.Create(
-            new CustomerId(customer.Id),
-            batchId,
-            orderDetails
-        );
-
-        customer.AddOrder(order);
-
-        var payments = paymentValues.Select(p =>
-            Payment.Create(customer.Id, p, DateTime.UtcNow)).ToList();
-
-        payments.ForEach(customer.AddPayment);
-
-        return customer;
     }
 
     private static async Task SeedForTestingAsync(ApplicationDbContext context)
@@ -296,5 +264,53 @@ public static class DataSeeder
         context.Customers.Add(testCustomer);
 
         await context.SaveChangesAsync();
+    }
+
+    private static Customer CreateCustomerOrder(
+        string name,
+        decimal[] orderValues,
+        decimal[] paymentValues,
+        BatchId batchId)
+    {
+        var customer = Customer.Register(new CustomerName(name));
+
+        customer.AddOrder(
+            CreateOrderWithDetails(
+                new CustomerId(customer.Id),
+                orderValues,
+                batchId));
+
+        CreatePayments(customer, paymentValues);
+
+        return customer;
+    }
+
+    private static Order CreateOrderWithDetails(
+        CustomerId customerId,
+        decimal[] orderValues,
+        BatchId batchId)
+    {
+        var orderDetails = orderValues.Select(v =>
+            new OrderDetail(
+                new ProductTypeId(Guid.NewGuid()),
+                new Money(v),
+                DateTime.UtcNow.AddDays(-orderValues.ToList().IndexOf(v))
+            ))
+            .ToList();
+
+        return Order.Create(
+            new CustomerId(customerId),
+            batchId,
+            orderDetails
+        );
+    }
+
+    private static void CreatePayments(Customer customer, decimal[] paymentValues)
+    {
+        var payments = paymentValues.Select(
+                    p => Payment.Create(customer.Id, p, DateTime.UtcNow))
+                    .ToList();
+
+        payments.ForEach(customer.AddPayment);
     }
 }
