@@ -1,12 +1,5 @@
 ﻿namespace Api.Application.Payments.Dtos;
 
-public record PaymentHistoryDto(
-    string State,
-    DateTime ChangedAt,
-    string? Reason,
-    string? ExternalReference
-);
-
 public record PaymentDto(
     Guid PaymentId,
     Guid CustomerId,
@@ -54,3 +47,13 @@ public record PaymentSnapshotDto(
       "paymentDate": "2025-09-15T14:00:00Z"
     }
 */
+
+public record PaymentHistoryDto(
+    string State,
+    DateTime ChangedAt,
+    string? Reason,
+    string? ExternalReference
+);
+
+public record MakePaymentRequest(decimal Amount, DateTime? PaymentDate = null);
+public record MakePaymentResponse(Guid PaymentId, decimal Amount, DateTime PaymentDate);

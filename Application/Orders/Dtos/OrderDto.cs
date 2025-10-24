@@ -1,4 +1,7 @@
-﻿namespace Api.Application.Orders.Dtos;
+﻿using Api.Application.Payments.Dtos;
+using Api.Domain.ValueObjects;
+
+namespace Api.Application.Orders.Dtos;
 
 public record OrderDto(
     Guid OrderId,
@@ -25,3 +28,11 @@ public record OrderDto(
       "total": 100.00
     }
 */
+
+public record PlaceOrderRequest(BatchNumber BatchNumber, ProductTypeId ProductTypeId, DateTime OrderDate, DateTime DueDate, bool Settled = false);
+
+public record PlaceOrderResponse(OrderId OrderId, DateTime? OrderDate);
+
+public record PlaceOrderWithPaymentRequest(PlaceOrderRequest Order, decimal? PaymentAmount);
+
+public record OrderWithPaymentResponse(PlaceOrderResponse Order, MakePaymentResponse? Payment);

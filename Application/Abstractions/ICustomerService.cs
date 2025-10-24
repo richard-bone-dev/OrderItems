@@ -1,5 +1,4 @@
 ﻿using Api.Application.Customers.Dtos;
-using Api.Application.Dtos;
 using Api.Domain.ValueObjects;
 
 namespace Api.Application.Interfaces;
