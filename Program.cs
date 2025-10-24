@@ -115,7 +115,6 @@ public class Program
 
         app.UseStaticFiles();
         app.UseRouting();
-        app.UseHttpsRedirection();
         app.UseAuthorization();
 
         app.UseCors("AllowFrontend");
