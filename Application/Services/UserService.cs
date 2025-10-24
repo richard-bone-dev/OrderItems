@@ -1,4 +1,6 @@
-﻿using Api.Application.Dtos;
+﻿using Api.Application.Customers.Dtos;
+using Api.Application.Orders.Dtos;
+using Api.Application.Payments.Dtos;
 using Api.Application.Interfaces;
 using Api.Domain.Entities;
 using Api.Domain.ValueObjects;

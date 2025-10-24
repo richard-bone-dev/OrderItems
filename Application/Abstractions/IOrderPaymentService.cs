@@ -1,4 +1,5 @@
-﻿using Api.Application.Dtos;
+﻿using Api.Application.Orders.Dtos;
+using Api.Application.Payments.Dtos;
 using Api.Domain.ValueObjects;
 
 namespace Api.Application.Interfaces;
