@@ -5,6 +5,11 @@
 
 <h1>@ViewData["Title"]</h1>
 
+@if (ViewData["StatusMessage"] is string statusMessage && !string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="alert alert-success" role="alert">@statusMessage</div>
+}
+
 <form asp-action="Login" method="post" class="form-horizontal" data-validate="true" novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="ReturnUrl" />

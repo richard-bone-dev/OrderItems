@@ -22,6 +22,11 @@ public class AccountController : Controller
     [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
     {
+        if (TempData.TryGetValue("StatusMessage", out var statusMessage))
+        {
+            ViewData["StatusMessage"] = statusMessage;
+        }
+
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 
@@ -43,7 +48,7 @@ public class AccountController : Controller
 
         if (result.Succeeded)
         {
-            return RedirectToLocal(viewModel.ReturnUrl);
+            return RedirectToLocal(viewModel.ReturnUrl, successMessage: "You have been signed in.");
         }
 
         if (result.RequiresTwoFactor)
@@ -89,12 +94,14 @@ public class AccountController : Controller
         if (result.Succeeded)
         {
             await _signInManager.SignInAsync(user, isPersistent: viewModel.RememberMe);
-            return RedirectToLocal(viewModel.ReturnUrl);
+            return RedirectToLocal(
+                viewModel.ReturnUrl,
+                successMessage: "Your account has been created and you are signed in.");
         }
 
         foreach (var error in result.Errors)
         {
-            ModelState.AddModelError(error.Code, error.Description);
+            ModelState.AddModelError(string.Empty, error.Description);
         }
 
         return View(viewModel);
@@ -105,17 +112,22 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout(string? returnUrl = null)
     {
         await _signInManager.SignOutAsync();
-        return RedirectToLocal(returnUrl);
+        return RedirectToLocal(returnUrl, successMessage: "You have been signed out.");
     }
 
-    private IActionResult RedirectToLocal(string? returnUrl)
+    private IActionResult RedirectToLocal(string? returnUrl, string? successMessage = null)
     {
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
-            return Redirect(returnUrl);
+            return LocalRedirect(returnUrl);
         }
 
-        return Redirect(Url.Content("~/"));
+        if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            TempData["StatusMessage"] = successMessage;
+        }
+
+        return RedirectToAction(nameof(Login));
     }
 
     public sealed record LoginViewModel
