@@ -1,126 +1,109 @@
 (function () {
     "use strict";
 
-    const VALIDITY_MAP = [
-        { key: "valueMissing", dataKey: "errorRequired", defaultMessage: "This field is required." },
-        { key: "typeMismatch", dataKey: "errorType", defaultMessage: field => field.type === "email" ? "Please enter a valid email address." : "Please enter a valid value." },
-        { key: "patternMismatch", dataKey: "errorPattern", defaultMessage: "Please match the requested format." },
-        { key: "tooShort", dataKey: "errorMinlength", defaultMessage: field => `Please enter at least ${field.getAttribute("minlength")} characters.` },
-        { key: "tooLong", dataKey: "errorMaxlength", defaultMessage: field => `Please enter no more than ${field.getAttribute("maxlength")} characters.` },
-        { key: "rangeUnderflow", dataKey: "errorMin", defaultMessage: field => `Please enter a value greater than or equal to ${field.getAttribute("min")}.` },
-        { key: "rangeOverflow", dataKey: "errorMax", defaultMessage: field => `Please enter a value less than or equal to ${field.getAttribute("max")}.` },
-        { key: "stepMismatch", dataKey: "errorStep", defaultMessage: "Please enter a valid value." },
-        { key: "badInput", dataKey: "errorType", defaultMessage: "Please enter a valid value." }
-    ];
+    const MESSAGE_FACTORIES = {
+        valueMissing: field => field.dataset.errorRequired || "This field is required.",
+        typeMismatch: field => field.dataset.errorType || (field.type === "email" ? "Please enter a valid email address." : "Please enter a valid value."),
+        patternMismatch: field => field.dataset.errorPattern || "Please match the requested format.",
+        tooShort: field => field.dataset.errorMinlength || `Please enter at least ${field.getAttribute("minlength")} characters.`,
+        tooLong: field => field.dataset.errorMaxlength || `Please enter no more than ${field.getAttribute("maxlength")} characters.`,
+        rangeUnderflow: field => field.dataset.errorMin || `Please enter a value greater than or equal to ${field.getAttribute("min")}.`,
+        rangeOverflow: field => field.dataset.errorMax || `Please enter a value less than or equal to ${field.getAttribute("max")}.`,
+        stepMismatch: field => field.dataset.errorStep || "Please enter a valid value.",
+        badInput: field => field.dataset.errorType || "Please enter a valid value."
+    };
 
-    function getMessage(field, descriptor) {
-        const customMessage = field.dataset?.[descriptor.dataKey];
-
-        if (customMessage) {
-            return customMessage;
-        }
-
-        if (typeof descriptor.defaultMessage === "function") {
-            return descriptor.defaultMessage(field);
-        }
-
-        return descriptor.defaultMessage;
-    }
-
-    function findMessageElement(field) {
+    function findMessageTarget(field) {
         const targetId = field.getAttribute("data-error-target");
-
         if (targetId) {
             return document.getElementById(targetId);
         }
 
-        const labelled = field.closest("[data-field]");
-
-        if (labelled) {
-            const candidate = labelled.querySelector("[data-error-message], .field__error, .error-message");
-            if (candidate) {
-                return candidate;
+        const fieldWrapper = field.closest("[data-field]");
+        if (fieldWrapper) {
+            const labelled = fieldWrapper.querySelector("[data-error-message], .field__error, .error-message");
+            if (labelled) {
+                return labelled;
             }
         }
 
-        const next = field.nextElementSibling;
-        if (next && (next.hasAttribute("data-error-message") || next.classList.contains("field__error") || next.classList.contains("error-message"))) {
-            return next;
+        const sibling = field.nextElementSibling;
+        if (sibling && (sibling.hasAttribute("data-error-message") || sibling.classList.contains("field__error") || sibling.classList.contains("error-message"))) {
+            return sibling;
         }
 
         return null;
     }
 
-    function clearError(field) {
+    function clearMessage(field) {
         field.removeAttribute("aria-invalid");
-
-        const messageElement = findMessageElement(field);
-        if (messageElement) {
-            messageElement.textContent = "";
+        const target = findMessageTarget(field);
+        if (target) {
+            target.textContent = "";
         }
     }
 
-    function showError(field, message) {
+    function showMessage(field, message) {
         field.setAttribute("aria-invalid", "true");
-
-        const messageElement = findMessageElement(field);
-        if (messageElement) {
-            messageElement.textContent = message;
+        const target = findMessageTarget(field);
+        if (target) {
+            target.textContent = message;
         }
     }
 
-    function validateField(field) {
-        if (!(field instanceof HTMLElement)) {
-            return true;
-        }
-
-        const element = field;
-        const isDisabled = element.matches(":disabled") || element.getAttribute("aria-disabled") === "true";
-
-        if (isDisabled) {
-            clearError(element);
-            return true;
-        }
-
-        if (!(element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement)) {
-            return true;
-        }
-
-        const validity = element.validity;
-
-        if (validity.valid) {
-            clearError(element);
-            return true;
-        }
-
-        for (const descriptor of VALIDITY_MAP) {
-            if (validity[descriptor.key]) {
-                const message = getMessage(element, descriptor);
-                showError(element, message);
-                return false;
+    function messageFor(field) {
+        const { validity } = field;
+        for (const key in MESSAGE_FACTORIES) {
+            if (Object.prototype.hasOwnProperty.call(MESSAGE_FACTORIES, key) && validity[key]) {
+                return MESSAGE_FACTORIES[key](field);
             }
         }
+        return field.validationMessage || "The value provided is not valid.";
+    }
 
-        showError(element, element.validationMessage || "The value provided is not valid.");
+    function isSupportedField(field) {
+        return field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement;
+    }
+
+    function updateFieldState(field) {
+        if (!(field instanceof HTMLElement) || !isSupportedField(field)) {
+            return true;
+        }
+
+        if (field.matches(":disabled") || field.getAttribute("aria-disabled") === "true") {
+            clearMessage(field);
+            return true;
+        }
+
+        if (field.validity.valid) {
+            clearMessage(field);
+            return true;
+        }
+
+        showMessage(field, messageFor(field));
         return false;
     }
 
-    function validateForm(form) {
-        if (!(form instanceof HTMLFormElement)) {
-            return true;
+    function collectFields(form) {
+        return Array.from(form.querySelectorAll("input, select, textarea"));
+    }
+
+    function updatePreview(form) {
+        const preview = document.getElementById("order-preview");
+        if (!preview) {
+            return;
         }
 
-        const fields = Array.from(form.querySelectorAll("input, select, textarea"));
-        let isValid = true;
-
-        for (const field of fields) {
-            const fieldValid = validateField(field);
-            if (!fieldValid && isValid) {
-                isValid = false;
-            }
+        const formData = new FormData(form);
+        const entries = Array.from(formData.entries());
+        if (entries.length === 0) {
+            preview.textContent = "";
+            preview.hidden = true;
+            return;
         }
 
-        return isValid;
+        preview.textContent = entries.map(([key, value]) => `${key}: ${value}`).join("\n");
+        preview.hidden = false;
     }
 
     function handleSubmit(event) {
@@ -129,39 +112,39 @@
             return;
         }
 
-        if (!validateForm(form)) {
+        const fields = collectFields(form);
+        let hasErrors = false;
+        fields.forEach(field => {
+            const valid = updateFieldState(field);
+            if (!valid) {
+                hasErrors = true;
+            }
+        });
+
+        if (hasErrors) {
             event.preventDefault();
-            const firstInvalid = form.querySelector("[aria-invalid='true']");
-            if (firstInvalid instanceof HTMLElement) {
+            const firstInvalid = fields.find(field => field.getAttribute("aria-invalid") === "true");
+            if (firstInvalid) {
                 firstInvalid.focus();
             }
             return;
         }
 
-        const preview = document.getElementById("order-preview");
-        if (preview) {
-            const formData = new FormData(form);
-            const entries = Array.from(formData.entries()).map(([key, value]) => `${key}: ${value}`);
-            preview.textContent = entries.join("\n");
-            preview.hidden = entries.length === 0;
-        }
+        updatePreview(form);
     }
 
-    function attachRealtimeValidation(form) {
-        const fields = Array.from(form.querySelectorAll("input, select, textarea"));
-
-        for (const field of fields) {
-            const handler = () => validateField(field);
+    function attachValidation(form) {
+        const fields = collectFields(form);
+        fields.forEach(field => {
+            const handler = () => updateFieldState(field);
             field.addEventListener("input", handler);
             field.addEventListener("blur", handler);
-        }
+        });
 
         form.addEventListener("submit", handleSubmit);
         form.addEventListener("reset", () => {
             window.requestAnimationFrame(() => {
-                for (const field of fields) {
-                    clearError(field);
-                }
+                fields.forEach(clearMessage);
                 const preview = document.getElementById("order-preview");
                 if (preview) {
                     preview.textContent = "";
@@ -172,11 +155,10 @@
     }
 
     function initialise() {
-        const forms = document.querySelectorAll("form[data-validate]");
-        forms.forEach(form => {
-            if (form instanceof HTMLFormElement) {
-                form.setAttribute("novalidate", "novalidate");
-                attachRealtimeValidation(form);
+        document.querySelectorAll("form[data-validate]").forEach(element => {
+            if (element instanceof HTMLFormElement) {
+                element.setAttribute("novalidate", "novalidate");
+                attachValidation(element);
             }
         });
     }
@@ -186,9 +168,4 @@
     } else {
         initialise();
     }
-
-    window.SimpleFormValidator = {
-        validateField,
-        validateForm
-    };
 })();
