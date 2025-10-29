@@ -1,9 +1,11 @@
 using Api.Application.Abstractions;
 using Api.Application.Reporting.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/reporting")]
 public class ReportingController : ControllerBase

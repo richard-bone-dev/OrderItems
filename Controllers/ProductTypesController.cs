@@ -3,10 +3,12 @@ using Api.Application.ProductTypes.Commands.Handlers;
 using Api.Application.ProductTypes.Dtos;
 using Api.Application.ProductTypes.Queries;
 using Api.Application.ProductTypes.Queries.Handlers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/productTypes")]
 public class ProductTypesController : ControllerBase

@@ -3,11 +3,13 @@ using Api.Application.Payments.Commands;
 using Api.Application.Payments.Dtos;
 using Api.Application.Payments.Exceptions;
 using Api.Application.Payments.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/payments")]
 public class PaymentsController : ControllerBase

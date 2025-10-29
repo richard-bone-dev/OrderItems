@@ -1,10 +1,12 @@
 ﻿using Api.Application.Orders.Commands;
 using Api.Application.Orders.Commands.Handlers;
 using Api.Application.Orders.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/orders")]
 public class OrdersController : ControllerBase

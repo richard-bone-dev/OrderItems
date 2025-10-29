@@ -4,10 +4,12 @@ using Api.Application.Customers.Dtos;
 using Api.Application.Customers.Queries;
 using Api.Application.Customers.Queries.Handlers;
 using Api.Domain.ValueObjects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/customers")]
 public class CustomersController : ControllerBase

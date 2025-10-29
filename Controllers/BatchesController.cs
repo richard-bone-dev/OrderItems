@@ -3,10 +3,12 @@ using Api.Application.Batches.Commands.Handlers;
 using Api.Application.Batches.Dtos;
 using Api.Application.Batches.Queries;
 using Api.Application.Batches.Queries.Handlers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/batches")]
 public class BatchesController : ControllerBase
