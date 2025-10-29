@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Order Entry</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="js/form-validation.js" defer></script>
+</head>
+<body>
+    <main class="page">
+        <header class="page__header">
+            <h1>Order entry</h1>
+            <p class="page__lead">Submit a new order with instant client-side validation written in vanilla JavaScript.</p>
+        </header>
+
+        <section class="card">
+            <h2 class="card__title">New order</h2>
+            <form id="order-form" data-validate novalidate>
+                <div class="field" data-field>
+                    <label class="field__label" for="customerId">Customer ID</label>
+                    <input
+                        class="field__input"
+                        id="customerId"
+                        name="customerId"
+                        type="text"
+                        placeholder="e.g. 9b3e1d34-2f63-4cc9-a2c7-a5d6421c9ce7"
+                        required
+                        minlength="36"
+                        maxlength="36"
+                        data-error-target="customerId-error"
+                        data-error-required="Please provide the customer's identifier."
+                        data-error-minlength="Customer identifiers must contain 36 characters." />
+                    <p class="field__error" id="customerId-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="field" data-field>
+                    <label class="field__label" for="batchId">Batch ID</label>
+                    <input
+                        class="field__input"
+                        id="batchId"
+                        name="batchId"
+                        type="text"
+                        placeholder="e.g. 4f1a93b7-ea31-4821-8d98-0ed09d6a22c4"
+                        required
+                        minlength="36"
+                        maxlength="36"
+                        data-error-target="batchId-error"
+                        data-error-required="Please provide a batch identifier."
+                        data-error-minlength="Batch identifiers must contain 36 characters." />
+                    <p class="field__error" id="batchId-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="field" data-field>
+                    <label class="field__label" for="productTypeId">Product type ID</label>
+                    <input
+                        class="field__input"
+                        id="productTypeId"
+                        name="productTypeId"
+                        type="text"
+                        placeholder="e.g. 43862936-c5ed-4de3-87d6-016d735e834a"
+                        required
+                        minlength="36"
+                        maxlength="36"
+                        data-error-target="productTypeId-error"
+                        data-error-required="Please provide the product type identifier."
+                        data-error-minlength="Product type identifiers must contain 36 characters." />
+                    <p class="field__error" id="productTypeId-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="field" data-field>
+                    <label class="field__label" for="amount">Amount</label>
+                    <input
+                        class="field__input"
+                        id="amount"
+                        name="amount"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="e.g. 149.99"
+                        required
+                        data-error-target="amount-error"
+                        data-error-required="An order amount is required."
+                        data-error-min="Amounts must be greater than zero."
+                        data-error-step="Amounts must contain at most two decimal places." />
+                    <p class="field__error" id="amount-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="form-actions">
+                    <button class="button" type="submit">Submit order</button>
+                    <button class="button button--secondary" type="reset">Reset</button>
+                </div>
+            </form>
+
+            <output id="order-preview" class="preview" hidden></output>
+        </section>
+    </main>
+</body>
+</html>

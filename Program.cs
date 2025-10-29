@@ -113,6 +113,7 @@ public class Program
 
         app.UseSecurityPipeline();
 
+        app.UseDefaultFiles();
         app.UseStaticFiles();
         app.UseRouting();
         app.UseAuthentication();
