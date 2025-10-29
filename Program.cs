@@ -70,9 +70,9 @@ public class Program
         builder.Services.AddSingleton<IApiErrorResponseFactory, ApiErrorResponseFactory>();
 
         builder.Services.AddControllersWithViews(options =>
-            {
-                options.Filters.Add<ExceptionMappingFilter>();
-            })
+        {
+            options.Filters.Add<ExceptionMappingFilter>();
+        })
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>
@@ -207,33 +207,78 @@ public static class DataSeeder
         if (!context.Customers.Any(u => u.Name.Value == "Admin"))
             context.Customers.Add(Customer.Register(new CustomerName("Admin")));
 
+        var productTypeNone = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "None").Id);
+        var productType4 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "1").Id);
+        var productType7 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "2").Id);
+        var productType8 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "2a").Id);
+        var productType10 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "3").Id);
+        var productType11 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "3a").Id);
+        var productType12 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "4").Id);
+        var productType19 = new ProductTypeId(context.ProductTypes.First(pt => pt.Name == "8").Id);
+
         if (!context.Customers.Any())
         {
             var customers = new List<Customer>
             {
-                CreateCustomerOrder("Tree", [8m, 4m, 8m, 4m], [2m], batch.Id),
-                CreateCustomerOrder("DC", [9m, 2m, 8m, 4m, 4m], [], batch.Id),
-                CreateCustomerOrder("MrSherg", [7m, 4m, 6m, 4m], [10m], batch.Id),
-                CreateCustomerOrder("Rozweiler", [2m, 7m, 12m, 7m, 4m, 6m, 12m], [], batch.Id),
-                CreateCustomerOrder("Kieran", [30m, 2m, 4m, 4m], [], batch.Id),
-                CreateCustomerOrder("Linc", [12m], [], batch.Id),
-                CreateCustomerOrder("Pullen", [12m], [], batch.Id),
-                CreateCustomerOrder("Saffer", [8m], [], batch.Id),
-                CreateCustomerOrder("Sean", [2m, 4m], [], batch.Id),
-                CreateCustomerOrder("Wiggy", [4m, 4m], [], batch.Id),
-                CreateCustomerOrder("Tall", [4m], [], batch.Id),
-                CreateCustomerOrder("JoeQ", [4m], [], batch.Id),
-                CreateCustomerOrder("Jock", [4m, 4m], [], batch.Id),
-                CreateCustomerOrder("BoatA", [3m], [], batch.Id),
-                CreateCustomerOrder("Parsonage", [2m], [], batch.Id),
-                CreateCustomerOrder("Tropical", [49.5m, 8m], [], batch.Id),
-                CreateCustomerOrder("Syd", [40m], [], batch.Id),
-                CreateCustomerOrder("Aussie", [70m], [], batch.Id),
-                CreateCustomerOrder("Stu", [54.5m], [], batch.Id),
-                CreateCustomerOrder("Landscaper", [12m], [], batch.Id),
-                CreateCustomerOrder("Pill", [12m], [], batch.Id),
-                CreateCustomerOrder("Bordeaux", [4m, 4m], [], batch.Id),
-                CreateCustomerOrder("Aidy", [4m], [], batch.Id),
+                CreateCustomerOrder("Tree", batch.Id, 0m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 24)),
+                    OrderDetail.Create(productType8, new Money(8), new DateTime(2025, 10, 25)),
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 26)),
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 27))
+                ], 2m),
+                CreateCustomerOrder("DC", batch.Id, 27m, [
+                    OrderDetail.Create(productType8, new Money(8), new DateTime(2025, 10, 25))
+                ], 8m),
+                CreateCustomerOrder("MrSherg", batch.Id, 10m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 24)),
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 25)),
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 27))
+                ]),
+                CreateCustomerOrder("Rossweiler", batch.Id, 0m, [
+                    OrderDetail.Create(productType12, new Money(12), new DateTime(2025, 10, 24)),
+                    OrderDetail.Create(productType12, new Money(12), new DateTime(2025, 10, 26)),
+                    OrderDetail.Create(productType12, new Money(12), new DateTime(2025, 10, 28))
+                ]),
+                CreateCustomerOrder("SillyBollocks", batch.Id, 0m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 25))
+                ]),
+                CreateCustomerOrder("Cannon", batch.Id, 0m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 25)),
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 26))
+                ]),
+                CreateCustomerOrder("Tropical", batch.Id, 49.5m, [
+                    OrderDetail.Create(productType8, new Money(8), new DateTime(2025, 10, 23)),
+                    OrderDetail.Create(productType10, new Money(10), new DateTime(2025, 10, 26)),
+                    OrderDetail.Create(productType8, new Money(8), new DateTime(2025, 10, 26)),
+                    OrderDetail.Create(productType8, new Money(8), new DateTime(2025, 10, 27))
+                ]),
+                CreateCustomerOrder("Jock", batch.Id, 0m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 24))
+                ]),
+                CreateCustomerOrder("GB", batch.Id, 8m, [
+                    OrderDetail.Create(productType8, new Money(8), new DateTime(2025, 10, 25))
+                ], 5m),
+                CreateCustomerOrder("BoatA", batch.Id, 3m, [
+                    OrderDetail.Create(productTypeNone, new Money(5m), new DateTime(2025, 10, 24)),
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 25))
+                ]),
+                CreateCustomerOrder("Pill", batch.Id, 12m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 24))
+                ]),
+                CreateCustomerOrder("Sean", batch.Id, 6m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 24))
+                ]),
+                CreateCustomerOrder("PT", batch.Id, 0m, [
+                    OrderDetail.Create(productType4, new Money(4), new DateTime(2025, 10, 28))
+                ]),
+                CreateCustomerOrder("Linc", batch.Id, 12m, []),
+                CreateCustomerOrder("Pullen", batch.Id, 12m, [], 4m),
+                CreateCustomerOrder("Syd", batch.Id, 40m, []),
+                CreateCustomerOrder("Aussie", batch.Id, 70m, []),
+                CreateCustomerOrder("Stu", batch.Id, 54.5m, []),
+                CreateCustomerOrder("Landscaper", batch.Id, 12m, []),
+                CreateCustomerOrder("Bordeaux", batch.Id, 4m, []),
+                CreateCustomerOrder("Aidy", batch.Id, 4m, []),
                 //CreateCustomer("Tracey", [8m], [], batch.Id),
                 //CreateCustomer("Crystal", [6m], [], batch.Id),
                 //CreateCustomer("SamMc", [12m], batch.Id),
@@ -247,6 +292,52 @@ public static class DataSeeder
 
             await context.SaveChangesAsync();
         }
+    }
+
+    private static Customer CreateCustomerOrder(
+        string name,
+        BatchId batchId,
+        decimal balance,
+        List<OrderDetail> orderDetails,
+        decimal? paymentValue = null)
+    {
+        var customer = Customer.Register(new CustomerName(name));
+
+        customer.AddOrder(
+            CreateOrderWithDetail(
+                new CustomerId(customer.Id),
+                batchId,
+                balance,
+                orderDetails));
+
+        if (paymentValue != null) CreatePayment(customer, paymentValue, DateTime.UtcNow);
+
+        return customer;
+    }
+
+    private static ProductTypeId ProductTypeNone => new ProductTypeId(new Guid("82B22333-799F-4322-AA5E-86AB3C551A6E"));
+
+    private static Order CreateOrderWithDetail(
+        CustomerId customerId,
+        BatchId batchId,
+        decimal balance,
+        List<OrderDetail> orderDetails)
+    {
+        var details = new List<OrderDetail> { OrderDetail.Create(ProductTypeNone, new Money(balance), DateTime.MinValue) };
+        details.AddRange(orderDetails);
+
+        return Order.Create(
+            new CustomerId(customerId),
+            batchId,
+            details
+        );
+    }
+
+    private static void CreatePayment(Customer customer, decimal? paymentValue, DateTime? date = null)
+    {
+        if (date == null) date = DateTime.UtcNow;
+
+        customer.AddPayment(Payment.Create(customer.Id, paymentValue.Value, date));
     }
 
     private static async Task SeedForTestingAsync(ApplicationDbContext context)
@@ -265,52 +356,83 @@ public static class DataSeeder
 
         await context.SaveChangesAsync();
     }
-
-    private static Customer CreateCustomerOrder(
-        string name,
-        decimal[] orderValues,
-        decimal[] paymentValues,
-        BatchId batchId)
-    {
-        var customer = Customer.Register(new CustomerName(name));
-
-        customer.AddOrder(
-            CreateOrderWithDetails(
-                new CustomerId(customer.Id),
-                orderValues,
-                batchId));
-
-        CreatePayments(customer, paymentValues);
-
-        return customer;
-    }
-
-    private static Order CreateOrderWithDetails(
-        CustomerId customerId,
-        decimal[] orderValues,
-        BatchId batchId)
-    {
-        var orderDetails = orderValues.Select(v =>
-            new OrderDetail(
-                new ProductTypeId(Guid.NewGuid()),
-                new Money(v),
-                DateTime.UtcNow.AddDays(-orderValues.ToList().IndexOf(v))
-            ))
-            .ToList();
-
-        return Order.Create(
-            new CustomerId(customerId),
-            batchId,
-            orderDetails
-        );
-    }
-
-    private static void CreatePayments(Customer customer, decimal[] paymentValues)
-    {
-        var payments = paymentValues.Select(
-                    p => Payment.Create(customer.Id, p, DateTime.UtcNow))
-                    .ToList();
-
-        payments.ForEach(customer.AddPayment);
-    }
 }
+
+//private static Customer CreateCustomerOrder(
+//    string name,
+//    decimal[] orderValues,
+//    decimal[] paymentValues,
+//    BatchId batchId)
+//{
+//    var customer = Customer.Register(new CustomerName(name));
+
+//    customer.AddOrder(
+//        CreateOrderWithDetails(
+//            new CustomerId(customer.Id),
+//            orderValues,
+//            batchId));
+
+//    CreatePayments(customer, paymentValues);
+
+//    return customer;
+//}
+
+//private static Customer CreateCustomerOrder(
+//    string name,
+//    decimal[] orderValues,
+//    BatchId batchId)
+//{
+//    var customer = Customer.Register(new CustomerName(name));
+
+//    customer.AddOrder(
+//        CreateOrderWithDetail(
+//            new CustomerId(customer.Id),
+//            batchId,
+//            orderValues,
+//            batchId));
+
+//    return customer;
+//}
+
+//private static Order CreateOrderWithDetails(
+//    CustomerId customerId,
+//    decimal[] orderValues,
+//    BatchId batchId)
+//{
+//    var orderDetails = orderValues.Select(v =>
+//        new OrderDetail(
+//            new ProductTypeId(Guid.NewGuid()),
+//            new Money(v),
+//            DateTime.UtcNow.AddDays(-orderValues.ToList().IndexOf(v))
+//        ))
+//        .ToList();
+
+//    return Order.Create(
+//        new CustomerId(customerId),
+//        batchId,
+//        orderDetails
+//    );
+//}
+
+//private static void CreatePayments(Customer customer, decimal[] paymentValues)
+//{
+//    var payments = paymentValues.Select(
+//                p => Payment.Create(customer.Id, p, DateTime.UtcNow))
+//                .ToList();
+
+//    payments.ForEach(customer.AddPayment);
+//}
+
+//private static void CreatePayment(Customer customer, decimal paidAmount)
+//{
+//    customer.AddPayment(Payment.Create(customer.Id, paidAmount));
+//}
+
+//private static void CreatePayments(Customer customer, decimal[] paymentValues)
+//{
+//    var payments = paymentValues.Select(
+//                p => Payment.Create(customer.Id, p, DateTime.UtcNow))
+//                .ToList();
+
+//    payments.ForEach(customer.AddPayment);
+//}

@@ -9,11 +9,11 @@ public sealed class OrderDetail : IEquatable<OrderDetail>
     public int Quantity { get; }
     public DateTime PlacedAt { get; }
     public DateTime? DueDate { get; }
-    public Money Total => new(UnitPrice.Amount * Quantity);
+    public Money Total => UnitPrice.Amount.HasValue ? new(UnitPrice.Amount.Value * Quantity) : new(null);
 
     private OrderDetail() { }
 
-    public OrderDetail(ProductTypeId productTypeId, Money unitPrice, DateTime placedAt, int quantity = 1, DateTime? dueDate = null)
+    private OrderDetail(ProductTypeId productTypeId, Money unitPrice, DateTime placedAt, int quantity = 1, DateTime? dueDate = null)
     {
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be positive.");
@@ -23,6 +23,27 @@ public sealed class OrderDetail : IEquatable<OrderDetail>
         PlacedAt = placedAt;
         Quantity = quantity;
         DueDate = dueDate;
+    }
+
+    //private OrderDetail(ProductTypeId productTypeId, DateTime placedAt, int quantity = 1, DateTime? dueDate = null)
+    //{
+    //    if (quantity <= 0)
+    //        throw new ArgumentException("Quantity must be positive.");
+
+    //    ProductTypeId = productTypeId ?? throw new ArgumentNullException(nameof(productTypeId));
+    //    PlacedAt = placedAt;
+    //    Quantity = quantity;
+    //    DueDate = dueDate;
+    //}
+
+    public static OrderDetail Create(ProductTypeId productTypeId, DateTime placedAt, int quantity = 1, DateTime? dueDate = null)
+    {
+        return new OrderDetail(productTypeId, new Money(null), placedAt, quantity, dueDate);
+    }
+
+    public static OrderDetail Create(ProductTypeId productTypeId, Money unitPrice, DateTime placedAt, int quantity = 1, DateTime? dueDate = null)
+    {
+        return new OrderDetail(productTypeId, unitPrice, placedAt, quantity, dueDate);
     }
 
     public bool Equals(OrderDetail? other)
