@@ -37,7 +37,7 @@ public class Batch : Entity<BatchId>
 
         ReserveStock(quantity);
 
-        var detail = new OrderDetail(productTypeId, total, placedAt, quantity, dueDate);
+        var detail = OrderDetail.Create(productTypeId, total, placedAt, quantity, dueDate);
         var order = Order.Create(customerId, Id, [detail]);
         _orders.Add(order);
 
