@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/productTypes")]
 public class ProductTypesController : ControllerBase
@@ -25,10 +24,12 @@ public class ProductTypesController : ControllerBase
         _getProductTypes = getProductTypes;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<ProductTypeDto?>> GetAllAsync(CancellationToken ct)
         => Ok(await _getProductTypes.HandleAsync(new GetProductTypeQuery(), ct));
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ProductTypeDto>> CreateAsync([FromBody] CreateProductTypeCommand cmd, CancellationToken ct)
         => Ok(await _createProductType.HandleAsync(cmd, ct));

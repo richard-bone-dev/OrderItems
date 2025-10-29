@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/customers")]
 public class CustomersController : ControllerBase
@@ -31,6 +30,7 @@ public class CustomersController : ControllerBase
     /// <summary>
     /// Create a new customer
     /// </summary>
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<CustomerDto>> CreateAsync([FromBody] CreateCustomerCommand cmd, CancellationToken ct)
     {
@@ -46,6 +46,7 @@ public class CustomersController : ControllerBase
     /// <summary>
     /// List all customers
     /// </summary>
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomersAsync(CancellationToken ct)
     {
@@ -56,6 +57,7 @@ public class CustomersController : ControllerBase
     /// <summary>
     /// Get customer by Id
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("{customerId:guid}")]
     public async Task<ActionResult<CustomerDto>> GetByIdAsync(Guid customerId, CancellationToken ct)
     {
@@ -69,6 +71,7 @@ public class CustomersController : ControllerBase
     /// <summary>
     /// Get customer financial statement
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("{customerId:guid}/statement")]
     public async Task<ActionResult<CustomerStatementResponse>> GetStatementAsync(Guid customerId, CancellationToken ct)
     {

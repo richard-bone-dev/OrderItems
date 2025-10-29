@@ -92,6 +92,8 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseCors("AllowFrontend");
+
         if (!app.Environment.IsEnvironment("Testing"))
         {
             using (var scope = app.Services.CreateScope())
@@ -117,8 +119,6 @@ public class Program
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
-
-        app.UseCors("AllowFrontend");
 
         app.MapControllers();
         app.MapDefaultControllerRoute();

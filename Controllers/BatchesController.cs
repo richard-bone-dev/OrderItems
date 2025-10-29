@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/batches")]
 public class BatchesController : ControllerBase
@@ -24,10 +23,12 @@ public class BatchesController : ControllerBase
         _getCurrent = getCurrent;
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<BatchDto>> CreateAsync([FromBody] CreateBatchCommand cmd, CancellationToken ct)
         => Ok(await _createBatch.HandleAsync(cmd, ct));
 
+    [AllowAnonymous]
     [HttpGet("current")]
     public async Task<ActionResult<BatchDto?>> GetCurrentAsync(CancellationToken ct)
     {
